@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-deepBlue-25: oklch(0.98 0.01 250);
+  --color-deepBlue-50: oklch(0.95 0.02 250);
+  --color-deepBlue-100: oklch(0.9 0.04 250);
+  --color-deepBlue-200: oklch(0.8 0.08 250);
+  --color-deepBlue-300: oklch(0.7 0.12 250);
+  --color-deepBlue-400: oklch(0.6 0.15 250);
+  --color-deepBlue-500: oklch(0.5 0.18 250);
+  --color-deepBlue-600: oklch(0.4 0.2 250);
+  --color-deepBlue-700: oklch(0.3 0.22 250);
+  --color-deepBlue-800: oklch(0.2 0.24 250);
+  --color-deepBlue-900: oklch(0.12 0.25 250);
+  --color-deepBlue-950: oklch(0.07 0.26 250);
+}
