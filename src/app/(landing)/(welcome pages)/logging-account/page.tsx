@@ -3,22 +3,17 @@ import Heading from "@/components/Heading";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useQuery } from "@tanstack/react-query";
 import { LucideProps } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import axios from "axios";
 
 function Page() {
-  const searchedParams = useSearchParams();
-  const passedValue = searchedParams.get("passedValue")?.toString();
-
   const router = useRouter();
 
   const { data } = useQuery({
     queryKey: ["get-database-sync-status"],
     queryFn: async () => {
-      const response = await axios.post("/api/auth", {
-        passedValue,
-      });
+      const response = await axios.get("/api/auth-log-in", {});
       return await response.data;
     },
     refetchInterval: (query) => {
@@ -26,13 +21,13 @@ function Page() {
     },
   });
   useEffect(() => {
-    if (passedValue === "OWNER" && data?.isSynced) {
+    if (data?.role === "OWNER" && data?.isSynced) {
       router.push("/owner-dashboard");
     }
-    if (passedValue === "TENANT" && data?.isSynced) {
+    if (data?.role === "TENANT" && data?.isSynced) {
       router.push("/tenant-dashboard");
     }
-  }, [data, router, passedValue]);
+  }, [data, router]);
   return (
     <div className="flex-w-full pt-30 flex-1 items-center justify-center px-4">
       <BackgroundPattern className="absolute inset-0 left-1/2 z-0 -translate-x-1/2 opacity-75" />
