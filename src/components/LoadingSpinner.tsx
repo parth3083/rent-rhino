@@ -2,7 +2,7 @@ import { cva, VariantProps } from "class-variance-authority";
 import React from "react";
 
 const spinnerVariants = cva(
-  "border-4 rounded-full border-deepBlue-200 border-t-deepBlue-700 animate-spin duration-700",
+  "border-4 rounded-full border-deepBlue-200 border-t-deepBlue-500 animate-spin duration-700",
   {
     variants: {
       size: {

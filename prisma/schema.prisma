@@ -50,14 +50,14 @@ enum Ticket_Status {
 
 model Owner {
   id                 String     @id @default(cuid())
-  name               String
+  name               String?
   email              String     @unique
   externalId         String     @unique
-  contactNumber      Int
-  adharNumber        Int
-  adharImage         String
-  numberOfProperties Int        @default(0)
-  totalRevenue       Float      @default(0)
+  contactNumber      Int?
+  adharNumber        Int?
+  adharImage         String?
+  numberOfProperties Int?        @default(0)
+  totalRevenue       Float?      @default(0)
   properties         Property[] @relation("OwnerProperties")
   payments           Payments[]
   createdAt          DateTime   @default(now())
@@ -66,22 +66,22 @@ model Owner {
 
 model Tenant {
   id                  String                 @id @default(cuid())
-  name                String
+  name                String?
   email               String                 @unique
   externalId          String                 @unique
-  contactNumber       Int
-  adharNumber         Int
-  adharImage          String
-  workingArea         String
+  contactNumber       Int?
+  adharNumber         Int?
+  adharImage          String?
+  workingArea         String?
   tenantStatus        TenantStatus           @default(STUDENT)
   rentPaymentType     RentPayment            @default(MONTHLY)
   leaseStart          DateTime?
   leaseEnd            DateTime?
-  rentAmount          Float
+  rentAmount          Float?
   leaseExtension      LeaseExtension         @default(INCREASE)
   leaseContract       String?
   rentedProperty      Property[]
-  rentedPropertyId    String
+  rentedPropertyId    String?
   propertyId          String?
   payments            Payments[]
   maintenanceRequests Maintainence_Support[]

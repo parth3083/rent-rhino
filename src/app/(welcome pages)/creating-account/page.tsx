@@ -1,14 +1,39 @@
 "use client";
-// import {  useSearchParams } from "next/navigation";
-import React from "react";
-import {LucideProps} from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect } from "react";
+import { LucideProps } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Heading from "@/components/Heading";
-
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 function Page() {
-    // const searchedParams = useSearchParams();
-    // const passedValue = searchedParams.get("passedValue")?.toString()
+  const searchedParams = useSearchParams();
+  const passedValue = searchedParams.get("passedValue")?.toString();
+
+  const router = useRouter();
+
+  const { data } = useQuery({
+    queryKey: ["get-database-sync-status"],
+    queryFn: async () => {
+      const response = await axios.post("/api/auth", {
+        passedValue,
+      });
+      return await response.data;
+    },
+    refetchInterval: (query) => {
+      return query.state.data?.isSynced ? false : 1000;
+    },
+  });
+
+  useEffect(() => {
+    if (passedValue === "OWNER" && data?.isSynced) {
+      router.push("/owner-dashboard");
+    }
+    if (passedValue === "TENANT" && data?.isSynced) {
+      router.push("/tenant-dashboard");
+    }
+  }, [data, router, passedValue]);
 
   return (
     <div className="flex-w-full pt-30 flex-1 items-center justify-center px-4">
@@ -19,13 +44,12 @@ function Page() {
         <p className="text-base/7 text-gray-600 max-w-prose">
           Just a moment while we set things up for you...
         </p>
-      
       </div>
     </div>
   );
 }
 
-const BackgroundPattern = (props:LucideProps) => {
+const BackgroundPattern = (props: LucideProps) => {
   return (
     <svg
       width="768"
@@ -121,7 +145,7 @@ const BackgroundPattern = (props:LucideProps) => {
         </clipPath>
       </defs>
     </svg>
-  )
-}
+  );
+};
 
 export default Page;
