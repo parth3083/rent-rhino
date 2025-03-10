@@ -20,9 +20,13 @@ function Page() {
   return (
     <div className="w-full h-screen  flex items-center justify-center">
       <MaxWidth className="w-full flex flex-col py-16 items-center justify-center">
-        <Heading className="lg:text-6xl">Please select your role :</Heading>
+        <Heading className="lg:text-5xl">Please select your role</Heading>
+        <p className="mt-2 text-md w-[60%] font-medium text-center text-pretty ">
+          Before you begin, let{"'"}s get to know you better! Pick a role that
+          best represents you and enjoy a customized experience.
+        </p>
         <div className="w-full h-full flex flex-col flex-1 gap-5 md:gap-10 items-center justify-center">
-          <div className="size-64 lg:size-64 md:size-80 ">
+          <div className="size-64  lg:size-64 md:size-80 ">
             <Image
               src={"/role-selection-image.png"}
               alt="Role Selection Image"
