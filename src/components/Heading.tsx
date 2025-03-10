@@ -9,7 +9,7 @@ interface HeadingProps extends HTMLAttributes<HTMLHeadingElement>{
 function Heading({ children,className,...props}: HeadingProps) {
   return (
       <h1
-          className={ cn( " text-2xl  md:text-5xl font-semibold w-full tracking-tight  text-deepBlue-500 ",className)}
+          className={ cn( " text-4xl sm:text-5xl text-pretty font-semibold  tracking-tight  text-deepBlue-500 ",className)}
           {...props}
       >{children}</h1>
   )
