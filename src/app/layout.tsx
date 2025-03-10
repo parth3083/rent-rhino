@@ -28,9 +28,11 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-deepBlue-25  min-h-[calc(100vh-1px)] flex flex-col`}
         >
-          <Provider>{children}</Provider>
+          <main className="relative flex flex-1 flex-col ">
+            <Provider>{children}</Provider>
+          </main>
         </body>
       </html>
     </ClerkProvider>
