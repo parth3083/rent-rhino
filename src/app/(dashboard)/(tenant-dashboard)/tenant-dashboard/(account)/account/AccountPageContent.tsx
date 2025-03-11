@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import {toast} from "sonner"
+import { toast } from "sonner";
 
 enum TENANT_STATUS {
   STUDENT = "STUDENT",
@@ -76,14 +76,8 @@ function AccountPageContent() {
   const uploadImageToCloudinary = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append(
-      "upload_preset",
-      "rent_rhino"
-    );
-    formData.append(
-      "cloud_name",
-      "do8etu7ml"
-    );
+    formData.append("upload_preset", "rent_rhino");
+    formData.append("cloud_name", "do8etu7ml");
     try {
       const response = await axios.post(
         `https://api.cloudinary.com/v1_1/do8etu7ml/image/upload`,
@@ -121,18 +115,28 @@ function AccountPageContent() {
         <div className="w-full items-center  gap-8 lg:gap-36   flex ">
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="name">Name</Label>
-            <Input type="text" readOnly id="name" defaultValue={data?.user.name ?? ""} />
+            <Input
+              type="text"
+              readOnly
+              id="name"
+              defaultValue={data?.user.name ?? ""}
+            />
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="email">Email</Label>
-            <Input type="email" readOnly id="email" defaultValue={data?.user.email ?? ""}  />
+            <Input
+              type="email"
+              readOnly
+              id="email"
+              defaultValue={data?.user.email ?? ""}
+            />
           </div>
         </div>
         <div className="w-full items-center gap-8 lg:gap-36   flex ">
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="contact">Contact Number</Label>
             <Input
-              defaultValue={Number(data?.user.contactNumber )?? number}
+              defaultValue={Number(data?.user.contactNumber) ?? number}
               {...register("contactNumber")}
               type="number"
               maxLength={10}
@@ -192,29 +196,26 @@ function AccountPageContent() {
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="working">Tenant Status</Label>
             <Select
-                onValueChange={(value: TENANT_STATUS) =>
-                  setValue("tenantStatus", value)
-                }
-              >
-                <SelectTrigger className="w-full max-w-sm">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    
-                    <SelectItem value={TENANT_STATUS.STUDENT}>
-                      Student
-                    </SelectItem>
-                    <SelectItem value={TENANT_STATUS.WORKING_PROFESSIONAL}>
-                      Working Professional
-                    </SelectItem>
-                    <SelectItem value={TENANT_STATUS.FAMILY}>Family</SelectItem>
-                  <SelectItem value={  TENANT_STATUS.SELF_EMPLOYED}>
-                      Self Employeed
-                    </SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              onValueChange={(value: TENANT_STATUS) =>
+                setValue("tenantStatus", value)
+              }
+            >
+              <SelectTrigger className="w-full max-w-sm">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value={TENANT_STATUS.STUDENT}>Student</SelectItem>
+                  <SelectItem value={TENANT_STATUS.WORKING_PROFESSIONAL}>
+                    Working Professional
+                  </SelectItem>
+                  <SelectItem value={TENANT_STATUS.FAMILY}>Family</SelectItem>
+                  <SelectItem value={TENANT_STATUS.SELF_EMPLOYED}>
+                    Self Employeed
+                  </SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
             {errors.tenantStatus ? (
               <p className="mt-1 text-sm text-red-500">
                 {errors.tenantStatus.message}
