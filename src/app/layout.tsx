@@ -3,6 +3,7 @@ import { Quicksand } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import Provider from "@/utils/Provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const quickSand = Quicksand({
   variable: "--font-Quicksand",
@@ -28,6 +29,7 @@ export default function RootLayout({
           <main className="relative flex flex-1 flex-col ">
             <Provider>{children}</Provider>
           </main>
+          <Toaster/>
         </body>
       </html>
     </ClerkProvider>

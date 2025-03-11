@@ -1,6 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { PrismaClient } from "@prisma/client";
-import {  NextResponse } from "next/server";
 
 export async function getTenant() {
   try {
@@ -19,10 +18,7 @@ export async function getTenant() {
     }
     return tenant;
   } catch (error) {
-    return NextResponse.json(
-      { message: "Authentiaction Error", error },
-      { status: 500 }
-    );
-    return null;
+    console.error(error);
+    throw new Error("Authentication Error");
   }
 }
