@@ -6,6 +6,7 @@ import { LucideProps } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import axios from "axios";
+import Image from "next/image";
 
 function Page() {
   const router = useRouter();
@@ -13,9 +14,10 @@ function Page() {
   const { data } = useQuery({
     queryKey: ["get-database-sync-status"],
     queryFn: async () => {
-      const response = await axios.get("/api/auth-log-in", {});
+      const response = await axios.get("/api/auth-log-in");
       return await response.data;
     },
+
     refetchInterval: (query) => {
       return query.state.data?.isSynced ? false : 1000;
     },
@@ -33,6 +35,16 @@ function Page() {
       <BackgroundPattern className="absolute inset-0 left-1/2 z-0 -translate-x-1/2 opacity-75" />
       <div className="relative z-10 flex -transalte-y-1/2 flex-col items-center gap-6 text-center">
         <LoadingSpinner size={"md"} />
+        <div className="size-48 ">
+          <Image
+            src={"/loading.png"}
+            alt="Loading Image"
+            width={923}
+            height={890}
+            className="object-contain object-center"
+
+          />
+        </div>
         <Heading>Fetching your details...</Heading>
         <p className="text-base/7 text-gray-600 max-w-prose">
           Just a moment while we set things up for you...

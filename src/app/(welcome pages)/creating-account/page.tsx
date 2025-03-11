@@ -6,6 +6,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import Heading from "@/components/Heading";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import Image from "next/image";
 
 function Page() {
   const searchedParams = useSearchParams();
@@ -40,6 +41,15 @@ function Page() {
       <BackgroundPattern className="absolute inset-0 left-1/2 z-0 -translate-x-1/2 opacity-75" />
       <div className="relative z-10 flex -transalte-y-1/2 flex-col items-center gap-6 text-center">
         <LoadingSpinner size={"md"} />
+        <div className="size-48 ">
+          <Image
+            src={"/loading.png"}
+            alt="Loading Image"
+            width={923}
+            height={890}
+            className="object-contain object-center"
+          />
+        </div>
         <Heading>Creating your account...</Heading>
         <p className="text-base/7 text-gray-600 max-w-prose">
           Just a moment while we set things up for you...
