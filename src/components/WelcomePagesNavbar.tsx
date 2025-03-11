@@ -34,7 +34,7 @@ async function WelcomePagesNavbar() {
                     height={100}
                   />
                 </div>
-                <p className="text-base/7 font-medium capitalize">
+                <p className="text-sm font-medium capitalize">
                   {user.fullName}
                 </p>
               </div>

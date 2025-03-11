@@ -18,7 +18,7 @@ function Page() {
   };
 
   return (
-    <div className="w-full h-screen  flex items-center justify-center">
+    <div className="w-full h-[calc(100vh-64px)]  flex items-center justify-center">
       <MaxWidth className="w-full flex flex-col py-16 items-center justify-center">
         <Heading className="lg:text-5xl text-center">Please select your role</Heading>
         <p className="mt-2 text-md max-w-prose font-medium text-center text-pretty ">

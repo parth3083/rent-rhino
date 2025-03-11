@@ -1,7 +1,12 @@
+import DashboardPage from "@/components/DashboardPage";
 import React from "react";
 
 function Page() {
-  return <div>This is tenant Dashboard </div>;
+  return (
+    <DashboardPage title="Tenant Dashboard">
+hey this is thre dashboard Page content 
+    </DashboardPage>
+  );
 }
 
 export default Page;
