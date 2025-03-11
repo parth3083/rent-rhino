@@ -33,24 +33,24 @@ const SIDEBAR_ITEMS: SidebarCategory[] = [
   {
     category: "Overview",
     items: [
-      { href: "/tenant-dashboard", icon: Home, text: "Dashboard" },
+      { href: "/tenant-tenant-dashboard", icon: Home, text: "tenant-dashboard" },
       {
-        href: "/dashboard/lease-rent-details",
+        href: "/tenant-dashboard/lease-rent-details",
         icon: FileText,
         text: "Lease and Rent details",
       },
       {
-        href: "/dashboard/rented-property",
+        href: "/tenant-dashboard/rented-property",
         icon: Building,
         text: "Rented Property",
       },
       {
-        href: "/dashboard/maintainence-requests",
+        href: "/tenant-dashboard/maintainence-requests",
         icon: Wrench,
         text: "Maintainence Requests",
       },
       {
-        href: "/dashboard/support-tickets",
+        href: "/tenant-dashboard/support-tickets",
         icon: Ticket,
         text: "Support Tickets",
       },
@@ -60,7 +60,7 @@ const SIDEBAR_ITEMS: SidebarCategory[] = [
     category: "Explore Rentals ",
     items: [
       {
-        href: "/dashboard/explore-rentals",
+        href: "/tenant-dashboard/explore-rentals",
         icon: Search,
         text: "Explore Rentals",
       },
@@ -70,9 +70,9 @@ const SIDEBAR_ITEMS: SidebarCategory[] = [
   {
     category: "Settings",
     items: [
-      { href: "/dashboard/notifications", icon: Bell, text: "Notifications" },
+      { href: "/tenant-dashboard/notifications", icon: Bell, text: "Notifications" },
       {
-        href: "/dashboard/account-settings",
+        href: "/tenant-dashboard/account",
         icon: Settings,
         text: "Account Settings",
       },
