@@ -12,7 +12,6 @@ import {
   Menu,
   Search,
   Settings,
-  Ticket,
   Wrench,
   X,
 } from "lucide-react";
@@ -33,7 +32,11 @@ const SIDEBAR_ITEMS: SidebarCategory[] = [
   {
     category: "Overview",
     items: [
-      { href: "/tenant-tenant-dashboard", icon: Home, text: "tenant-dashboard" },
+      {
+        href: "/tenant-tenant-dashboard",
+        icon: Home,
+        text: "tenant-dashboard",
+      },
       {
         href: "/tenant-dashboard/lease-rent-details",
         icon: FileText,
@@ -48,11 +51,6 @@ const SIDEBAR_ITEMS: SidebarCategory[] = [
         href: "/tenant-dashboard/maintainence-requests",
         icon: Wrench,
         text: "Maintainence Requests",
-      },
-      {
-        href: "/tenant-dashboard/support-tickets",
-        icon: Ticket,
-        text: "Support Tickets",
       },
     ],
   },
@@ -70,7 +68,11 @@ const SIDEBAR_ITEMS: SidebarCategory[] = [
   {
     category: "Settings",
     items: [
-      { href: "/tenant-dashboard/notifications", icon: Bell, text: "Notifications" },
+      {
+        href: "/tenant-dashboard/notifications",
+        icon: Bell,
+        text: "Notifications",
+      },
       {
         href: "/tenant-dashboard/account",
         icon: Settings,
