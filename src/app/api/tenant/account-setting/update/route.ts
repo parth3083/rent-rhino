@@ -11,9 +11,23 @@ enum TENANT_STATUS {
 }
 
 const TENANT_DETAILS = z.object({
-  contactNumber: z.number().min(10).max(10),
-  adharNumber: z.number().min(12).max(12),
-  adharImage: z.string(),
+  contactNumber: z
+    .string()
+    .min(10)
+    .max(10)
+    .refine(
+      (val) => /^\d+$/.test(val),
+      "Aadhar number must contain only digits"
+    ),
+  adharNumber: z
+    .string()
+    .min(12)
+    .max(12)
+    .refine(
+      (val) => /^\d+$/.test(val),
+      "Aadhar number must contain only digits"
+    ),
+  adharImage: z.string().optional(),
   workingArea: z.string(),
   tenantStatus: z.nativeEnum(TENANT_STATUS),
 });
@@ -34,7 +48,11 @@ export async function POST(request: NextRequest) {
     const validation = TENANT_DETAILS.safeParse(body);
 
     if (!validation.success) {
-      return NextResponse.json({ message: "Invalid data" }, { status: 400 });
+      console.log(validation.error);
+      return NextResponse.json(
+        { message: "Invalid data", validation },
+        { status: 400 }
+      );
     }
     const {
       contactNumber,
@@ -49,8 +67,8 @@ export async function POST(request: NextRequest) {
         id: tenant?.id,
       },
       data: {
-        contactNumber,
-        adharNumber,
+        contactNumber:Number(contactNumber),
+        adharNumber:Number(adharNumber),
         adharImage,
         workingArea,
         tenantStatus,
@@ -64,6 +82,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    console.log(error);
     return NextResponse.json(
       {
         message: "Internal server error",

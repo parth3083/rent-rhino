@@ -69,11 +69,11 @@ model Tenant {
   name                String?
   email               String                 @unique
   externalId          String                 @unique
-  contactNumber       Int?
-  adharNumber         Int?
+  contactNumber       BigInt?
+  adharNumber         BigInt?
   adharImage          String?
   workingArea         String?
-  tenantStatus        TenantStatus           @default(STUDENT)
+  tenantStatus        TenantStatus          
   rentPaymentType     RentPayment            @default(MONTHLY)
   leaseStart          DateTime?
   leaseEnd            DateTime?

@@ -4,8 +4,14 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const user = await getTenant();
-    return NextResponse.json({ success: true, user }, { status: 201 });
+    const serializedUser = JSON.parse(
+      JSON.stringify(user, (_, value) =>
+        typeof value === "bigint" ? value.toString() : value
+      )
+    );
+    return NextResponse.json({ success: true, serializedUser }, { status: 201 });
   } catch (error) {
+    console.log(error);
     return NextResponse.json(
       {
         message: "Internal Server Error",
