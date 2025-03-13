@@ -33,9 +33,9 @@ const SIDEBAR_ITEMS: SidebarCategory[] = [
     category: "Overview",
     items: [
       {
-        href: "/tenant-tenant-dashboard",
+        href: "/tenant-dashboard",
         icon: Home,
-        text: "tenant-dashboard",
+        text: "Tenant Dashboard",
       },
       {
         href: "/tenant-dashboard/lease-rent-details",

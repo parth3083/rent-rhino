@@ -53,8 +53,8 @@ model Owner {
   name               String?
   email              String     @unique
   externalId         String     @unique
-  contactNumber      Int?
-  adharNumber        Int?
+  contactNumber      BigInt?
+  adharNumber        BigInt?
   adharImage         String?
   numberOfProperties Int?        @default(0)
   totalRevenue       Float?      @default(0)

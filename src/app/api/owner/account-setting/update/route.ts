@@ -1,16 +1,9 @@
-import { getTenant } from "@/lib/getTenant";
+import { getOwner } from "@/lib/getOwner";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-enum TENANT_STATUS {
-  STUDENT = "STUDENT",
-  WORKING_PROFESSIONAL = "WORKING_PROFESSIONAL",
-  FAMILY = "FAMILY",
-  SELF_EMPLOYED = "SELF_EMPLOYED",
-}
-
-const TENANT_DETAILS = z.object({
+const OWNER_DETAILS_VALIDATION = z.object({
   contactNumber: z
     .string()
     .min(10)
@@ -28,25 +21,17 @@ const TENANT_DETAILS = z.object({
       "Aadhar number must contain only digits"
     ),
   adharImage: z.string().optional(),
-  workingArea: z.string(),
-  tenantStatus: z.nativeEnum(TENANT_STATUS),
 });
 
 export async function PUT(request: NextRequest) {
   try {
-    const tenant = await getTenant();
+    const owner = await getOwner();
     const prisma = new PrismaClient();
-
-    if (!tenant) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 401 }
-      );
+    if (!owner) {
+      return NextResponse.json({ message: "Owner not found" }, { status: 401 });
     }
-
     const body = await request.json();
-    const validation = TENANT_DETAILS.safeParse(body);
-
+    const validation = OWNER_DETAILS_VALIDATION.safeParse(body);
     if (!validation.success) {
       console.log(validation.error);
       return NextResponse.json(
@@ -54,35 +39,33 @@ export async function PUT(request: NextRequest) {
         { status: 400 }
       );
     }
-    const {
-      contactNumber,
-      adharNumber,
-      adharImage,
-      workingArea,
-      tenantStatus,
-    } = validation.data;
+    const { contactNumber, adharNumber, adharImage } = validation.data;
 
-    await prisma.tenant.update({
+    const properties = await prisma.property.count({
       where: {
-        id: tenant?.id,
+        ownerId: owner?.id,
+      },
+    });
+
+    await prisma.owner.update({
+      where: {
+        id: owner?.id,
       },
       data: {
-        contactNumber:Number(contactNumber),
-        adharNumber:Number(adharNumber),
+        contactNumber: Number(contactNumber),
+        adharNumber: Number(adharNumber),
         adharImage,
-        workingArea,
-        tenantStatus,
+        numberOfProperties: properties,
       },
     });
     return NextResponse.json(
       {
-        message: "Tenant data updated successfully",
+        message: "Owner data updated successfully",
         success: true,
       },
       { status: 201 }
     );
   } catch (error) {
-    console.log(error);
     return NextResponse.json(
       {
         message: "Internal server error",

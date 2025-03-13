@@ -73,14 +73,17 @@ function AccountPageContent() {
 
   const { mutate: updateDetails, isPending } = useMutation({
     mutationFn: async (data: personalDetailsValidation) => {
-      const response = await axios.post(
+      const response = await axios.put(
         "/api/tenant/account-setting/update",
         data
       );
       return await response.data;
     },
     onSuccess: () => {
-      toast.success("Personal details updated successfully!");
+      toast("Updated successfully ✅", {
+        description: "Owner details have been updated.",
+      
+      })
       queryClient.invalidateQueries({
         queryKey: ["fetch-tenant-details"],
       });
