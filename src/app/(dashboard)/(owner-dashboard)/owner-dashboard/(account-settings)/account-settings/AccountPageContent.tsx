@@ -10,7 +10,6 @@ import { z } from "zod";
 import axios from "axios";
 import { toast } from "sonner";
 
-
 const OWNER_DETAILS_VALIDATION = z.object({
   contactNumber: z
     .string()
@@ -104,116 +103,114 @@ function AccountPageContent() {
   };
   return (
     <div className="w-full flex flex-col">
+      <h1 className="text-xl font-medium">Personal Information</h1>
 
-          <h1 className="text-xl font-medium">Personal Information</h1>
-
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="w-full flex flex-col items-start gap-5 lg:gap-8 p-2 lg:p-5"
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full flex flex-col items-start gap-5 lg:gap-8 p-2 lg:p-5"
+      >
+        <div className="w-full items-center  gap-8 lg:gap-36   flex ">
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              type="text"
+              readOnly
+              id="name"
+              defaultValue={data?.serializedOwner.name ?? ""}
+            />
+          </div>
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              type="email"
+              readOnly
+              id="email"
+              defaultValue={data?.serializedOwner.email ?? ""}
+            />
+          </div>
+        </div>
+        <div className="w-full items-center gap-8 lg:gap-36   flex ">
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor="contact">Contact Number</Label>
+            <Input
+              defaultValue={data?.serializedOwner.contactNumber ?? ""}
+              {...register("contactNumber")}
+              type="number"
+              maxLength={10}
+              id="contact"
+              placeholder="contact number"
+            />
+            {errors.contactNumber ? (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.contactNumber.message}
+              </p>
+            ) : null}
+          </div>
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor="adharNumber">Adhar Number</Label>
+            <Input
+              defaultValue={data?.serializedOwner.adharNumber ?? ""}
+              {...register("adharNumber")}
+              type="number"
+              id="adharNumber"
+              maxLength={12}
+              placeholder="adhar number"
+            />
+            {errors.adharNumber ? (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.adharNumber.message}
+              </p>
+            ) : null}
+          </div>
+        </div>
+        {data?.serializedOwner.adharImage ? (
+          <></>
+        ) : (
+          <div className="w-full items-center gap-8 lg:gap-36 lg:pr-36  flex ">
+            <div className="grid w-full  items-center gap-1.5">
+              <Label htmlFor="picture">Adhar Image</Label>
+              <Input onChange={handleFileChange} id="picture" type="file" />
+              {errors.adharImage ? (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.adharImage.message}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        )}
+        <div className="w-full items-center gap-8 lg:gap-36   flex ">
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor="working">No. of Properties</Label>
+            <Input
+              type="text"
+              readOnly
+              id="noOfProperties"
+              defaultValue={data?.serializedOwner.numberOfProperties ?? ""}
+            />
+          </div>
+        </div>
+        <div className="w-full items-center justify-start mt-5  gap-8 lg:gap-36   flex ">
+          <Button
+            type="button"
+            className={buttonVariants({
+              variant: "outline",
+              className: "px-7 ",
+            })}
           >
-            <div className="w-full items-center  gap-8 lg:gap-36   flex ">
-              <div className="grid w-full max-w-sm items-center gap-1.5">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  type="text"
-                  readOnly
-                  id="name"
-                  defaultValue={data?.serializedOwner.name ?? ""}
-                />
-              </div>
-              <div className="grid w-full max-w-sm items-center gap-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  type="email"
-                  readOnly
-                  id="email"
-                  defaultValue={data?.serializedOwner.email ?? ""}
-                />
-              </div>
-            </div>
-            <div className="w-full items-center gap-8 lg:gap-36   flex ">
-              <div className="grid w-full max-w-sm items-center gap-1.5">
-                <Label htmlFor="contact">Contact Number</Label>
-                <Input
-                  defaultValue={data?.serializedOwner.contactNumber ?? ""}
-                  {...register("contactNumber")}
-                  type="number"
-                  maxLength={10}
-                  id="contact"
-                  placeholder="contact number"
-                />
-                {errors.contactNumber ? (
-                  <p className="mt-1 text-sm text-red-500">
-                    {errors.contactNumber.message}
-                  </p>
-                ) : null}
-              </div>
-              <div className="grid w-full max-w-sm items-center gap-1.5">
-                <Label htmlFor="adharNumber">Adhar Number</Label>
-                <Input
-                  defaultValue={data?.serializedOwner.adharNumber ?? ""}
-                  {...register("adharNumber")}
-                  type="number"
-                  id="adharNumber"
-                  maxLength={12}
-                  placeholder="adhar number"
-                />
-                {errors.adharNumber ? (
-                  <p className="mt-1 text-sm text-red-500">
-                    {errors.adharNumber.message}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-            {data?.serializedOwner.adharImage ? (
-              <></>
-            ) : (
-              <div className="w-full items-center gap-8 lg:gap-36 lg:pr-36  flex ">
-                <div className="grid w-full  items-center gap-1.5">
-                  <Label htmlFor="picture">Adhar Image</Label>
-                  <Input onChange={handleFileChange} id="picture" type="file" />
-                  {errors.adharImage ? (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.adharImage.message}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            )}
-            <div className="w-full items-center gap-8 lg:gap-36   flex ">
-              <div className="grid w-full max-w-sm items-center gap-1.5">
-                <Label htmlFor="working">No. of Properties</Label>
-                <Input
-                  type="text"
-                  readOnly
-                  id="noOfProperties"
-                  defaultValue={data?.serializedOwner.numberOfProperties ?? ""}
-                />
-              </div>
-            </div>
-            <div className="w-full items-center justify-start mt-5  gap-8 lg:gap-36   flex ">
-              <Button
-                type="button"
-                className={buttonVariants({
-                  variant: "outline",
-                  className: "px-7 ",
-                })}
-              >
-                Cancel
-              </Button>
-              <Button
-                disabled={isPending}
-                type="submit"
-                className={buttonVariants({
-                  className:
-                    "px-7 hover:translate-y-0.5 transition-colors cursor-pointer hover:ring-1 hover:ring-deepBlue-600 hover:bg-white hover:text-deepBlue-600",
-                })}
-              >
-                {isPending ? "Updating..." : "Update"}
-              </Button>
-            </div>
-          </form>
-        
+            Cancel
+          </Button>
+          <Button
+            disabled={isPending}
+            type="submit"
+            className={buttonVariants({
+              className:
+                "px-7 hover:translate-y-0.5 transition-colors cursor-pointer hover:ring-1 hover:ring-deepBlue-600 hover:bg-white hover:text-deepBlue-600",
+            })}
+          >
+            {isPending ? "Updating..." : "Update"}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }
