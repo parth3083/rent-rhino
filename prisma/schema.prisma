@@ -56,8 +56,8 @@ model Owner {
   contactNumber      BigInt?
   adharNumber        BigInt?
   adharImage         String?
-  numberOfProperties Int?        @default(0)
-  totalRevenue       Float?      @default(0)
+  numberOfProperties Int?       @default(0)
+  totalRevenue       Float?     @default(0)
   properties         Property[] @relation("OwnerProperties")
   payments           Payments[]
   createdAt          DateTime   @default(now())
@@ -73,7 +73,7 @@ model Tenant {
   adharNumber         BigInt?
   adharImage          String?
   workingArea         String?
-  tenantStatus        TenantStatus          
+  tenantStatus        TenantStatus
   rentPaymentType     RentPayment            @default(MONTHLY)
   leaseStart          DateTime?
   leaseEnd            DateTime?
@@ -97,6 +97,7 @@ model Property {
   address        String
   area           String
   state          String
+  city           String
   zipCode        Int
   images         String[]
   personLimit    Int
