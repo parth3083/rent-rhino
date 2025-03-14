@@ -21,7 +21,7 @@ interface Property {
   area: string;
   city: string;
   state: string;
-  pinCode: number;
+  zipCode: string;
   propertyStatus: PROPERTY_STATUS;
 }
 
@@ -35,7 +35,7 @@ function AllPropertiesPageContent() {
     queryKey: ["fetch-all-onwer-properties"],
     queryFn: async () => {
       const response = await axios.get<ApiResponse>("/api/owner/all-property");
-      return await response.data;
+      return  response.data;
     },
     refetchInterval: (query) => {
       return query.state.data?.success ? false : 1000;
@@ -86,7 +86,7 @@ function AllPropertiesPageContent() {
                     area={items.area}
                     city={items.city}
                     state={items.state}
-                    pinCode={items.pinCode}
+                    pinCode={items.zipCode}
                     propertyStatus={items.propertyStatus}
                   />
                 ))}

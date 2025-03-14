@@ -106,7 +106,7 @@ const SIDEBAR_ITEMS: SidebarCategory[] = [
 
 const Sidebar = ({ onClose }: { onClose?: () => void }) => {
   return (
-    <div className="space-y-4 md:space-y-6 relative z-20 flex flex-col h-full">
+    <div className="space-y-4 pb-36 md:space-y-6 relative z-20 flex flex-col h-full">
       {/* logo  */}
       <p className="hidden sm:block text-lg/7 font-semibold text-deepBlue-700">
         Rent <span className="text-deepBlue-600">Rhino</span>
@@ -116,7 +116,7 @@ const Sidebar = ({ onClose }: { onClose?: () => void }) => {
       <div className="flex-grow">
         <ul>
           {SIDEBAR_ITEMS.map(({ category, items }) => (
-            <li key={category} className="mb-4 md:mb-8">
+            <li key={category} className="mb-4 md:mb-3">
               <p className="text-xs font-medium leading-6 text-zinc-500">
                 {category}
               </p>
