@@ -13,9 +13,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 enum PROPERTY_STATUS {
@@ -29,31 +32,72 @@ const PROPERTY_DETAILS_VALIDATION = z.object({
   area: z.string(),
   city: z.string(),
   state: z.string(),
-  pinCode: z.number(),
-  images: z.array(z.string()),
-  personLimit: z.number(),
+  pinCode: z
+    .string()
+    .refine(
+      (val) => /^\d+$/.test(val),
+      "Aadhar number must contain only digits"
+    ),
+  images: z.array(z.string()).optional(),
+  personLimit: z
+    .string()
+    .refine(
+      (val) => /^\d+$/.test(val),
+      "Aadhar number must contain only digits"
+    ),
   propertyStatus: z.nativeEnum(PROPERTY_STATUS),
-  rentAmount: z.number(),
-  depositAmount: z.number(),
+  rentAmount: z
+    .string()
+    .refine(
+      (val) => /^\d+$/.test(val),
+      "Aadhar number must contain only digits"
+    ),
+  depositAmount: z
+    .string()
+    .refine(
+      (val) => /^\d+$/.test(val),
+      "Aadhar number must contain only digits"
+    ),
 });
 
 type propertyDetailsValidation = z.infer<typeof PROPERTY_DETAILS_VALIDATION>;
 
 function AddPropertyPageContent() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
 
     const files = Array.from(e.target.files);
-    const previews = files.map((file) => URL.createObjectURL(file));
+    setImageFiles(files);
 
-    setImagePreviews((prev: string[]) => {
-      if (prev.length) {
-        prev.forEach((url) => URL.revokeObjectURL(url));
-      }
-      return [...prev, ...previews];
+    // Preview images
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setImagePreviews((prev) => {
+      prev.forEach((url) => URL.revokeObjectURL(url));
+      return previews;
     });
+  };
+
+  const uploadImagesToCloudinary = async (files: File[]) => {
+    const uploads = files.map(async (file) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "rent_rhino");
+      formData.append("cloud_name", "do8etu7ml");
+      try {
+        const response = await axios.post(
+          `https://api.cloudinary.com/v1_1/do8etu7ml/image/upload`,
+          formData
+        );
+        return response.data.secure_url;
+      } catch (error) {
+        console.error("Error uploading image: ", error);
+        return null;
+      }
+    });
+    return Promise.all(uploads);
   };
 
   const {
@@ -61,12 +105,39 @@ function AddPropertyPageContent() {
     formState: { errors },
     handleSubmit,
     setValue,
+    reset,
   } = useForm<propertyDetailsValidation>({
     resolver: zodResolver(PROPERTY_DETAILS_VALIDATION),
   });
 
-  const onSubmit = (data: propertyDetailsValidation) => {
-    console.log(data);
+  const { mutate: createProperty, isPending } = useMutation({
+    mutationFn: async (data: propertyDetailsValidation) => {
+      const response = await axios.post("/api/owner/add-property", data);
+
+      return response.data;
+    },
+    onSuccess: () => {
+      reset();
+      setImagePreviews([]);
+      toast("Property Added ✅", {
+        description: "Property has been added successfully.",
+      });
+    },
+  });
+
+  const onSubmit = async (data: propertyDetailsValidation) => {
+    const uploadImageUrls = await uploadImagesToCloudinary(imageFiles);
+    // Ensure images is a valid array of strings
+    data.images = uploadImageUrls.filter(
+      (url): url is string => typeof url === "string"
+    );
+
+    // Ensure images array is not empty to avoid schema error
+    if (data.images.length === 0) {
+      toast.error("Image upload failed. Please try again.");
+      return;
+    }
+    createProperty(data);
   };
 
   useEffect(() => {
@@ -95,6 +166,9 @@ function AddPropertyPageContent() {
               id="property_name"
               placeholder="Property Name"
             />
+            {errors.name ? (
+              <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
+            ) : null}
           </div>
         </div>
         <div className="w-full items-center  gap-8 lg:gap-36   flex ">
@@ -105,6 +179,11 @@ function AddPropertyPageContent() {
               placeholder="Type your message here."
               id="message"
             />
+            {errors.address ? (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.address.message}
+              </p>
+            ) : null}
           </div>
         </div>
         <div className="w-full items-center   gap-8 lg:gap-36   flex ">
@@ -116,6 +195,11 @@ function AddPropertyPageContent() {
               placeholder="State name"
               id="state"
             />
+            {errors.state ? (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.state.message}
+              </p>
+            ) : null}
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="city">City</Label>
@@ -125,6 +209,9 @@ function AddPropertyPageContent() {
               placeholder="City name"
               id="city"
             />
+            {errors.city ? (
+              <p className="mt-1 text-sm text-red-500">{errors.city.message}</p>
+            ) : null}
           </div>
         </div>
         <div className="w-full items-center   gap-8 lg:gap-36   flex ">
@@ -136,6 +223,9 @@ function AddPropertyPageContent() {
               placeholder="Area name"
               id="area"
             />
+            {errors.area ? (
+              <p className="mt-1 text-sm text-red-500">{errors.area.message}</p>
+            ) : null}
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="pincode">Pin Code</Label>
@@ -145,6 +235,11 @@ function AddPropertyPageContent() {
               placeholder="Pin Code"
               id="pincode"
             />
+            {errors.pinCode ? (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.pinCode.message}
+              </p>
+            ) : null}
           </div>
         </div>
 
@@ -162,6 +257,11 @@ function AddPropertyPageContent() {
               id="max_occupancy"
               placeholder="enter state name"
             />
+            {errors.personLimit ? (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.personLimit.message}
+              </p>
+            ) : null}
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="property_status">Property Status</Label>
@@ -180,6 +280,11 @@ function AddPropertyPageContent() {
                 </SelectGroup>
               </SelectContent>
             </Select>
+            {errors.propertyStatus ? (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.propertyStatus.message}
+              </p>
+            ) : null}
           </div>
         </div>
 
@@ -197,6 +302,11 @@ function AddPropertyPageContent() {
               placeholder="Enter rent amount "
               id="rent"
             />
+            {errors.rentAmount ? (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.rentAmount.message}
+              </p>
+            ) : null}
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="deposit">Deposit Amount (₹)</Label>
@@ -206,6 +316,11 @@ function AddPropertyPageContent() {
               placeholder="Enter deposit amount"
               id="deposit"
             />
+            {errors.depositAmount ? (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.depositAmount.message}
+              </p>
+            ) : null}
           </div>
         </div>
 
@@ -218,8 +333,17 @@ function AddPropertyPageContent() {
           <div className="grid w-full  items-center gap-1.5">
             <Label htmlFor="picture">Property Images</Label>
             <Input
-              {...register("images")}
-              multiple onChange={handleChange} id="picture" type="file" />
+              multiple
+              onChange={handleChange}
+              id="picture"
+              type="file"
+              accept="image/*"
+            />
+            {errors.images ? (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.images.message}
+              </p>
+            ) : null}
           </div>
         </div>
         {imagePreviews.length > 0 && (
@@ -255,12 +379,13 @@ function AddPropertyPageContent() {
           </Button>
           <Button
             type="submit"
+            disabled={isPending}
             className={buttonVariants({
               className:
                 "px-7 hover:translate-y-0.5 transition-colors cursor-pointer hover:ring-1 hover:ring-deepBlue-600 hover:bg-white hover:text-deepBlue-600",
             })}
           >
-            Add Property
+            {isPending ? "Creating..." : "Add Property"}
           </Button>
         </div>
       </form>
