@@ -1,36 +1,119 @@
+"use client";
 import Heading from "@/components/Heading";
+import { Card, CardContent } from "@/components/ui/card";
 import { LucideProps } from "lucide-react";
 import Image from "next/image";
 import React from "react";
+import PropertyCard from "../PropertyCard";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import LoadingSpinner from "@/components/LoadingSpinner";
+
+enum PROPERTY_STATUS {
+  EMPTY = "EMPTY",
+  RENTED = "RENTED",
+}
+interface Property {
+  id: string;
+  name: string;
+  address: string;
+  images: string[];
+  area: string;
+  city: string;
+  state: string;
+  pinCode: number;
+  propertyStatus: PROPERTY_STATUS;
+}
+
+interface ApiResponse {
+  success: boolean;
+  properties: Property[];
+}
 
 function AllPropertiesPageContent() {
-  const isProperty: boolean = false;
+  const { data, isLoading } = useQuery<ApiResponse>({
+    queryKey: ["fetch-all-onwer-properties"],
+    queryFn: async () => {
+      const response = await axios.get<ApiResponse>("/api/owner/all-property");
+      return await response.data;
+    },
+    refetchInterval: (query) => {
+      return query.state.data?.success ? false : 1000;
+    },
+  });
+
+  console.log(data);
   return (
-    <div className="w-full flex  flex-col">
-      {isProperty ? (
+    <div className="w-full flex flex-col gap-8">
+      {isLoading ? (
         <>
-          <h1>This is the property</h1>
+          <div className="flex w-full  pt-10 flex-1 items-center justify-center px-4">
+            <BackgroundPattern className="absolute inset-0 left-1/2 z-0 -translate-x-1/2 opacity-75" />
+            <div className="relative z-10 flex -transalte-y-1/2 flex-col items-center gap-6 text-center">
+              <LoadingSpinner size={"md"} />
+              <div className="size-48 ">
+                <Image
+                  src={"/loading.png"}
+                  alt="Loading Image"
+                  width={923}
+                  height={890}
+                  className="object-contain object-center"
+                />
+              </div>
+              <Heading>Fetching your property details...</Heading>
+              <p className="text-base/7 text-gray-600 max-w-prose">
+                Please hold on for a moment.
+              </p>
+            </div>
+          </div>
         </>
       ) : (
-        <div className="flex-w-full h-fit pt-12 items-center justify-center px-4">
-          <BackgroundPattern className="absolute inset-0 left-1/2 z-0 -translate-x-1/2 opacity-75" />
-          <div className="relative z-10 flex -transalte-y-1/2 flex-col items-center gap-6 text-center">
-            <div className="size-64 ">
-              <Image
-                src={"/no-property.png"}
-                alt="Loading Image"
-                width={1120}
-                height={1120}
-                className="object-contain object-center"
-              />
+        <>
+          {(data?.properties ?? []).length > 0 ? (
+            <>
+              <Card>
+                <CardContent>
+                  This will contain search bar and property details
+                </CardContent>
+              </Card>
+              <div className="w-full flex flex-col gap-3">
+                {data?.properties.map((items, index) => (
+                  <PropertyCard
+                    key={index}
+                    name={items.name}
+                    address={items.address}
+                    image={items.images[0]}
+                    area={items.area}
+                    city={items.city}
+                    state={items.state}
+                    pinCode={items.pinCode}
+                    propertyStatus={items.propertyStatus}
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="flex-w-full h-fit pt-12 items-center justify-center px-4">
+              <BackgroundPattern className="absolute inset-0 left-1/2 z-0 -translate-x-1/2 opacity-75" />
+              <div className="relative z-10 flex -transalte-y-1/2 flex-col items-center gap-6 text-center">
+                <div className="size-64 ">
+                  <Image
+                    src={"/no-property.png"}
+                    alt="Loading Image"
+                    width={1120}
+                    height={1120}
+                    className="object-contain object-center"
+                  />
+                </div>
+                <Heading>No Properties Listed Yet</Heading>
+                <p className="text-base/7 text-gray-600 max-w-prose">
+                  You haven{"'"}t added any properties. Start by listing a new
+                  property to manage and track your rentals effortlessly.
+                </p>
+              </div>
             </div>
-            <Heading>No Properties Listed Yet</Heading>
-            <p className="text-base/7 text-gray-600 max-w-prose">
-              You haven{"'"}t added any properties. Start by listing a new
-              property to manage and track your rentals effortlessly.
-            </p>
-          </div>
-        </div>
+          )}
+        </>
       )}
     </div>
   );

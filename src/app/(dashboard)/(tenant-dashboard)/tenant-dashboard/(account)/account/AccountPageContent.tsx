@@ -82,8 +82,7 @@ function AccountPageContent() {
     onSuccess: () => {
       toast("Updated successfully ✅", {
         description: "Owner details have been updated.",
-      
-      })
+      });
       queryClient.invalidateQueries({
         queryKey: ["fetch-tenant-details"],
       });
@@ -124,7 +123,10 @@ function AccountPageContent() {
 
   return (
     <div className="w-full  flex flex-col">
-      <h1 className="text-xl font-medium">Personal Information</h1>
+      <div className="w-full flex items-center  gap-2">
+        <h1 className="text-xl font-medium">Personal Information</h1>
+        <div className="h-px flex-1 bg-gray-300" />
+      </div>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="w-full flex flex-col items-start gap-5 lg:gap-8 p-2 lg:p-5 "

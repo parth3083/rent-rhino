@@ -103,7 +103,10 @@ function AccountPageContent() {
   };
   return (
     <div className="w-full flex flex-col">
-      <h1 className="text-xl font-medium">Personal Information</h1>
+      <div className="w-full flex items-center  gap-2">
+        <h1 className="text-xl font-medium">Personal Information</h1>
+        <div className="h-px flex-1 bg-gray-300" />
+      </div>
 
       <form
         onSubmit={handleSubmit(onSubmit)}

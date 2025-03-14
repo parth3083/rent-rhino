@@ -127,12 +127,10 @@ function AddPropertyPageContent() {
 
   const onSubmit = async (data: propertyDetailsValidation) => {
     const uploadImageUrls = await uploadImagesToCloudinary(imageFiles);
-    // Ensure images is a valid array of strings
     data.images = uploadImageUrls.filter(
       (url): url is string => typeof url === "string"
     );
 
-    // Ensure images array is not empty to avoid schema error
     if (data.images.length === 0) {
       toast.error("Image upload failed. Please try again.");
       return;
