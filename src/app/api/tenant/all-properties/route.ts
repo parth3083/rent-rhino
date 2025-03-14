@@ -1,10 +1,10 @@
-import { getOwner } from "@/lib/getOwner";
+import { getTenant } from "@/lib/getTenant";
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const owner = await getOwner();
+    const owner = await getTenant();
     if (!owner) {
       return NextResponse.json(
         {
@@ -16,9 +16,6 @@ export async function GET() {
     const prisma = new PrismaClient();
 
     const properties_details = await prisma.property.findMany({
-      where: {
-        ownerId: owner.id,
-      },
       select: {
         id: true,
         name: true,

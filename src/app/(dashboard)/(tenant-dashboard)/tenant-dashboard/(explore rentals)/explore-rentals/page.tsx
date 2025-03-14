@@ -1,10 +1,11 @@
 import DashboardPage from '@/components/DashboardPage'
 import React from 'react'
+import AllPropertiesPageContent from '../AllPropertiesPageContent'
 
 function Page() {
   return (
       <DashboardPage title='Explore Rentals'>
-          This is explore rentals content 
+         <AllPropertiesPageContent/>
     </DashboardPage>
   )
 }
