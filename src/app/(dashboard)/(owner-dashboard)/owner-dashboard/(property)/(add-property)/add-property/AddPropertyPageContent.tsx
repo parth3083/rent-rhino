@@ -385,7 +385,7 @@ function AddPropertyPageContent() {
                 "px-7 hover:translate-y-0.5 transition-colors cursor-pointer hover:ring-1 hover:ring-deepBlue-600 hover:bg-white hover:text-deepBlue-600",
             })}
           >
-            {isPending ? "Creating..." : "Add Property"}
+            {isPending ? "Adding property..." : "Add Property"}
           </Button>
         </div>
       </form>
