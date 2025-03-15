@@ -33,7 +33,7 @@ function DashboardPage({
                 <ArrowLeft className="size-4" />
               </Button>
             )}
-            <Heading>{title}</Heading>
+            <Heading className="capitalize">{title}</Heading>
           </div>
           {cta ? <div className="w-full">{cta}</div> : null}
         </div>

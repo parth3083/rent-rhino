@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import {
   Card,
   CardContent,
@@ -15,6 +15,7 @@ enum PROPERTY_STATUS {
 }
 
 interface PropertyCardProps {
+  id: string;
   name: string;
   address: string;
   image: string;
@@ -34,9 +35,13 @@ function PropertyCard({
   propertyStatus,
   name,
   image,
+  id,
 }: PropertyCardProps) {
   return (
-    <Link href={"#"} className="w-full">
+    <Link
+      href={`/owner-dashboard/all-properties/property/${id}`}
+      className="w-full"
+    >
       <Card className="w-full ">
         <CardContent className="flex flex-col sm:flex-row items-center   gap-3 w-full">
           <div className="left size-24  rounded-md overflow-hidden">
@@ -45,7 +50,6 @@ function PropertyCard({
               alt="Property Image"
               width={500}
               height={500}
-             
               className="object-fill w-full h-full object-center"
             />
           </div>

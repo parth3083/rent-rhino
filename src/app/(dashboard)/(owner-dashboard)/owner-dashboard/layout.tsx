@@ -37,7 +37,7 @@ const SIDEBAR_ITEMS: SidebarCategory[] = [
       {
         href: "/owner-dashboard",
         icon: Home,
-        text: "Tenant Dashboard",
+        text: "Owner Dashboard",
       },
       {
         href: "/owner-dashboard/maintainence-requests",

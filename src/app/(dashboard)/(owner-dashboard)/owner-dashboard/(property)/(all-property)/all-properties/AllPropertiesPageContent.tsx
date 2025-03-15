@@ -35,7 +35,7 @@ function AllPropertiesPageContent() {
     queryKey: ["fetch-all-onwer-properties"],
     queryFn: async () => {
       const response = await axios.get<ApiResponse>("/api/owner/all-property");
-      return  response.data;
+      return response.data;
     },
     refetchInterval: (query) => {
       return query.state.data?.success ? false : 1000;
@@ -79,6 +79,7 @@ function AllPropertiesPageContent() {
               <div className="w-full flex flex-col gap-3">
                 {data?.properties.map((items, index) => (
                   <PropertyCard
+                    id={items.id}
                     key={index}
                     name={items.name}
                     address={items.address}
