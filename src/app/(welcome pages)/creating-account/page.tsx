@@ -4,9 +4,8 @@ import React, { useEffect } from "react";
 import { LucideProps } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Heading from "@/components/Heading";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import Image from "next/image";
+import { trpc } from "@/app/_trpc/client";
 
 function Page() {
   const searchedParams = useSearchParams();
@@ -14,27 +13,19 @@ function Page() {
 
   const router = useRouter();
 
-  const { data } = useQuery({
-    queryKey: ["get-database-sync-status"],
-    queryFn: async () => {
-      const response = await axios.post("/api/auth", {
-        passedValue,
-      });
-      return await response.data;
-    },
-    refetchInterval: (query) => {
-      return query.state.data?.isSynced ? false : 1000;
-    },
-  });
+  const { mutate, data } = trpc.authSignUp.useMutation();
 
   useEffect(() => {
+    if (!passedValue) return;
+    mutate({ passedValue });
+
     if (passedValue === "OWNER" && data?.isSynced) {
       router.push("/owner-dashboard");
     }
     if (passedValue === "TENANT" && data?.isSynced) {
       router.push("/tenant-dashboard");
     }
-  }, [data, router, passedValue]);
+  }, [data, router, passedValue, mutate]);
 
   return (
     <div className="flex-w-full h-[calc(100vh-64px)] pt-30 flex-1 items-center justify-center px-4">

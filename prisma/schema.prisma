@@ -73,7 +73,7 @@ model Tenant {
   adharNumber         BigInt?
   adharImage          String?
   workingArea         String?
-  tenantStatus        TenantStatus
+  tenantStatus        TenantStatus?
   rentPaymentType     RentPayment            @default(MONTHLY)
   leaseStart          DateTime?
   leaseEnd            DateTime?

@@ -21,7 +21,7 @@ interface PropertyCardProps {
   area: string;
   city: string;
   state: string;
-  pinCode: string;
+  pinCode: number;
   propertyStatus: PROPERTY_STATUS;
 }
 

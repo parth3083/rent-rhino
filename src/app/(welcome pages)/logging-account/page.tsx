@@ -1,33 +1,24 @@
 "use client";
 import Heading from "@/components/Heading";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { useQuery } from "@tanstack/react-query";
 import { LucideProps } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
-import axios from "axios";
 import Image from "next/image";
+import { trpc } from "@/app/_trpc/client";
 
 function Page() {
   const router = useRouter();
 
-  const { data } = useQuery({
-    queryKey: ["get-database-sync-status"],
-    queryFn: async () => {
-      const response = await axios.get("/api/auth-log-in");
-      return await response.data;
-    },
-
-    refetchInterval: (query) => {
-      return query.state.data?.isSynced ? false : 1000;
-    },
-  });
+  const { data} = trpc.authLogIn.useQuery()
   useEffect(() => {
-    if (data?.role === "OWNER" && data?.isSynced) {
-      router.push("/owner-dashboard");
-    }
-    if (data?.role === "TENANT" && data?.isSynced) {
-      router.push("/tenant-dashboard");
+    if (data?.isSynced && data.role) {
+      if (data.role === "OWNER") {
+        router.push("/owner-dashboard");
+      }
+      if (data.role === "TENANT") {
+        router.push("/tenant-dashboard");
+      }
     }
   }, [data, router]);
   return (

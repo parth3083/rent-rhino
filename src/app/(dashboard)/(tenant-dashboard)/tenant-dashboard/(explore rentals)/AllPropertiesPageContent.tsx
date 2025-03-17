@@ -4,48 +4,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { LucideProps } from "lucide-react";
 import Image from "next/image";
 import React from "react";
-
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import PropertyCard from "./explore-rentals/PropertyCard";
+import { trpc } from "@/app/_trpc/client";
 
 enum PROPERTY_STATUS {
   EMPTY = "EMPTY",
   RENTED = "RENTED",
 }
-interface Property {
-  id: string;
-  name: string;
-  address: string;
-  images: string[];
-  area: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  propertyStatus: PROPERTY_STATUS;
-}
-
-interface ApiResponse {
-  success: boolean;
-  properties: Property[];
-}
 
 function AllPropertiesPageContent() {
-  const { data, isLoading } = useQuery<ApiResponse>({
-    queryKey: ["fetch-all-properties"],
-    queryFn: async () => {
-      const response = await axios.get<ApiResponse>(
-        "/api/tenant/all-properties"
-      );
-      return response.data;
-    },
+  const { data, isLoading } = trpc.getAllProperties.useQuery(undefined, {
     refetchInterval: (query) => {
       return query.state.data?.success ? false : 1000;
     },
   });
 
-  console.log(data);
   return (
     <div className="w-full flex flex-col gap-8">
       {isLoading ? (
@@ -90,7 +64,11 @@ function AllPropertiesPageContent() {
                     city={items.city}
                     state={items.state}
                     pinCode={items.zipCode}
-                    propertyStatus={items.propertyStatus}
+                    propertyStatus={
+                      PROPERTY_STATUS[
+                        items.propertyStatus as keyof typeof PROPERTY_STATUS
+                      ]
+                    }
                   />
                 ))}
               </div>

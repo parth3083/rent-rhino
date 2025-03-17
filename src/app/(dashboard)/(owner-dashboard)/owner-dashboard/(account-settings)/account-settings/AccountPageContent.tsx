@@ -3,12 +3,12 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import axios from "axios";
 import { toast } from "sonner";
+import { trpc } from "@/app/_trpc/client";
 
 const OWNER_DETAILS_VALIDATION = z.object({
   contactNumber: z
@@ -42,35 +42,21 @@ function AccountPageContent() {
     resolver: zodResolver(OWNER_DETAILS_VALIDATION),
   });
 
-  const queryClient = useQueryClient();
+  const utils = trpc.useContext();
 
-  const { data } = useQuery({
-    queryKey: ["fetch-owner-details"],
-    queryFn: async () => {
-      const response = await axios.get("/api/owner/get-owner");
-      return await response.data;
-    },
-    refetchInterval: (query) => {
-      return query.state.data?.success ? false : 1000;
-    },
+  const { data } = trpc.getOwner.useQuery(undefined, {
+    refetchInterval: (query) => (query.state.data?.success ? false : 1000),
   });
-  const { mutate: updateDetails, isPending } = useMutation({
-    mutationFn: async (data: ownerDetailsVCalidation) => {
-      const response = await axios.put(
-        "/api/owner/account-setting/update",
-        data
-      );
-      return await response.data;
-    },
-    onSuccess: () => {
-      toast("Updated successfully ✅", {
-        description: "Owner details have been updated.",
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["fetch-owner-details"],
-      });
-    },
-  });
+
+  const { mutate: updateDetails, isPending } =
+    trpc.updateOwnerDetails.useMutation({
+      onSuccess: () => {
+        toast("Updated successfully ✅", {
+          description: "Owner details have been updated.",
+        });
+        utils.getOwner.invalidate();
+      },
+    });
   const uploadImageToCloudinary = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -119,7 +105,7 @@ function AccountPageContent() {
               type="text"
               readOnly
               id="name"
-              defaultValue={data?.serializedOwner.name ?? ""}
+              defaultValue={data?.owner.name ?? ""}
             />
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -128,7 +114,7 @@ function AccountPageContent() {
               type="email"
               readOnly
               id="email"
-              defaultValue={data?.serializedOwner.email ?? ""}
+              defaultValue={data?.owner.email ?? ""}
             />
           </div>
         </div>
@@ -136,7 +122,7 @@ function AccountPageContent() {
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="contact">Contact Number</Label>
             <Input
-              defaultValue={data?.serializedOwner.contactNumber ?? ""}
+              defaultValue={data?.owner.contactNumber ?? ""}
               {...register("contactNumber")}
               type="number"
               maxLength={10}
@@ -152,7 +138,7 @@ function AccountPageContent() {
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="adharNumber">Adhar Number</Label>
             <Input
-              defaultValue={data?.serializedOwner.adharNumber ?? ""}
+              defaultValue={data?.owner.adharNumber ?? ""}
               {...register("adharNumber")}
               type="number"
               id="adharNumber"
@@ -166,7 +152,7 @@ function AccountPageContent() {
             ) : null}
           </div>
         </div>
-        {data?.serializedOwner.adharImage ? (
+        {data?.owner.adharImage ? (
           <></>
         ) : (
           <div className="w-full items-center gap-8 lg:gap-36 lg:pr-36  flex ">
@@ -188,7 +174,7 @@ function AccountPageContent() {
               type="text"
               readOnly
               id="noOfProperties"
-              defaultValue={data?.serializedOwner.numberOfProperties ?? ""}
+              defaultValue={data?.owner.numberOfProperties ?? ""}
             />
           </div>
         </div>

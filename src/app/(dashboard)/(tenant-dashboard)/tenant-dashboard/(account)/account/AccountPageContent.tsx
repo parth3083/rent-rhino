@@ -14,9 +14,9 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
+import { trpc } from "@/app/_trpc/client";
 
 enum TENANT_STATUS {
   STUDENT = "STUDENT",
@@ -58,36 +58,23 @@ function AccountPageContent() {
   } = useForm<personalDetailsValidation>({
     resolver: zodResolver(PERSONAL_DETAILS_VALIDATION),
   });
-  const queryClient = useQueryClient();
+  const utils = trpc.useContext();
 
-  const { data } = useQuery({
-    queryKey: ["fetch-tenant-details"],
-    queryFn: async () => {
-      const response = await axios.get("/api/tenant/get-tenant");
-      return await response.data;
-    },
+  const { data } = trpc.getTenant.useQuery(undefined, {
     refetchInterval: (query) => {
       return query.state.data?.success ? false : 1000;
     },
   });
 
-  const { mutate: updateDetails, isPending } = useMutation({
-    mutationFn: async (data: personalDetailsValidation) => {
-      const response = await axios.put(
-        "/api/tenant/account-setting/update",
-        data
-      );
-      return await response.data;
-    },
-    onSuccess: () => {
-      toast("Updated successfully ✅", {
-        description: "Owner details have been updated.",
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["fetch-tenant-details"],
-      });
-    },
-  });
+  const { mutate: updateDetails, isPending } =
+    trpc.updateTenantDetails.useMutation({
+      onSuccess: () => {
+        toast("Updated successfully ✅", {
+          description: "Owner details have been updated.",
+        });
+        utils.getTenant.invalidate();
+      },
+    });
 
   const uploadImageToCloudinary = async (file: File) => {
     const formData = new FormData();
@@ -138,7 +125,7 @@ function AccountPageContent() {
               type="text"
               readOnly
               id="name"
-              defaultValue={data?.serializedUser.name ?? ""}
+              defaultValue={data?.tenant.name ?? ""}
             />
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -147,7 +134,7 @@ function AccountPageContent() {
               type="email"
               readOnly
               id="email"
-              defaultValue={data?.serializedUser.email ?? ""}
+              defaultValue={data?.tenant.email ?? ""}
             />
           </div>
         </div>
@@ -155,7 +142,7 @@ function AccountPageContent() {
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="contact">Contact Number</Label>
             <Input
-              defaultValue={data?.serializedUser.contactNumber ?? ""}
+              defaultValue={data?.tenant.contactNumber ?? ""}
               {...register("contactNumber")}
               type="number"
               maxLength={10}
@@ -171,7 +158,7 @@ function AccountPageContent() {
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="adharNumber">Adhar Number</Label>
             <Input
-              defaultValue={data?.serializedUser.adharNumber ?? ""}
+              defaultValue={data?.tenant.adharNumber ?? ""}
               {...register("adharNumber")}
               type="number"
               id="adharNumber"
@@ -185,7 +172,7 @@ function AccountPageContent() {
             ) : null}
           </div>
         </div>
-        {data?.serializedUser.adharImage ? (
+        {data?.tenant.adharImage ? (
           <></>
         ) : (
           <div className="w-full items-center gap-8 lg:gap-36 lg:pr-36  flex ">
@@ -204,7 +191,7 @@ function AccountPageContent() {
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="working">Working Area</Label>
             <Input
-              defaultValue={data?.serializedUser.workingArea ?? ""}
+              defaultValue={data?.tenant.workingArea ?? ""}
               {...register("workingArea")}
               type="text"
               id="working"
@@ -218,10 +205,10 @@ function AccountPageContent() {
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="working">Tenant Status</Label>
-            {data?.serializedUser.tenantStatus ? (
+            {data?.tenant.tenantStatus ? (
               <>
                 <Input
-                  defaultValue={data?.serializedUser.tenantStatus ?? ""}
+                  defaultValue={data?.tenant.tenantStatus ?? ""}
                   type="text"
                   readOnly
                   id="tenantStatus"

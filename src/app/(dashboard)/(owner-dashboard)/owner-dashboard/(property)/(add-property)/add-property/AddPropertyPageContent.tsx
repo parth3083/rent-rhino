@@ -1,4 +1,5 @@
 "use client";
+import { trpc } from "@/app/_trpc/client";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -110,20 +110,15 @@ function AddPropertyPageContent() {
     resolver: zodResolver(PROPERTY_DETAILS_VALIDATION),
   });
 
-  const { mutate: createProperty, isPending } = useMutation({
-    mutationFn: async (data: propertyDetailsValidation) => {
-      const response = await axios.post("/api/owner/add-property", data);
-
-      return response.data;
-    },
-    onSuccess: () => {
-      reset();
-      setImagePreviews([]);
-      toast("Property Added ✅", {
-        description: "Property has been added successfully.",
-      });
-    },
-  });
+  const { mutate: createProperty, isPending } = trpc.addProperty.useMutation({
+      onSuccess: () => {
+        reset();
+        setImagePreviews([]);
+        toast("Property Added ✅", {
+          description: "Property has been added successfully.",
+        });
+      },
+  })
 
   const onSubmit = async (data: propertyDetailsValidation) => {
     const uploadImageUrls = await uploadImagesToCloudinary(imageFiles);
