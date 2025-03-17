@@ -23,10 +23,12 @@ async function Page({ params }: { params: Promise<{ id: string }> }) {
     },
   });
 
-    return <DashboardPage title={property?.name ?? ""} >
-      <PropertyDetailsContent/>
-        
-  </DashboardPage>;
+
+  return (
+    <DashboardPage title={property?.name ?? ""}>
+      <PropertyDetailsContent id={id} />
+    </DashboardPage>
+  );
 }
 
 export default Page;

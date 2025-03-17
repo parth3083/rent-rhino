@@ -4,7 +4,6 @@ import {
   router,
   tenantprivateProcedure,
 } from "./trpc";
-// import { TRPCError } from "@trpc/server";
 import { db } from "@/db";
 import { currentUser } from "@clerk/nextjs/server";
 import { z } from "zod";
@@ -30,33 +29,32 @@ export const appRouter = router({
 
   // AUTH LOG IN
 
-  
   authLogIn: procedure.query(async (): Promise<AuthResponse> => {
     const auth = await currentUser();
     if (!auth) {
       return { isSynced: false };
     }
-  
+
     const owner = await db.owner.findFirst({
       where: {
         externalId: auth.id,
       },
     });
-  
+
     if (owner) {
       return { isSynced: true, role: "OWNER" };
     }
-  
+
     const tenant = await db.tenant.findFirst({
       where: {
         externalId: auth.id,
       },
     });
-  
+
     if (tenant) {
       return { isSynced: true, role: "TENANT" };
     }
-  
+
     return { isSynced: false };
   }),
 
@@ -111,8 +109,8 @@ export const appRouter = router({
         return { isSynced: false };
       }
     }),
-  
-  // SHOW ALL THE PROPERTIES 
+
+  // SHOW ALL THE PROPERTIES
   getAllProperties: tenantprivateProcedure.query(async () => {
     const properties = await db.property.findMany({
       select: {
@@ -129,14 +127,14 @@ export const appRouter = router({
       orderBy: {
         createdAt: "desc",
       },
-    })
+    });
     return { success: true, properties };
   }),
 
   // OWNER API FUNCTIONS -------------------------------------------------
 
   // GET OWNER DETAILS
- getOwner: ownerPrivateProcedure.query(async ({ ctx }) => {
+  getOwner: ownerPrivateProcedure.query(async ({ ctx }) => {
     const { owner } = ctx;
     return { success: true, owner };
   }),
@@ -269,6 +267,26 @@ export const appRouter = router({
     });
     return { success: true, properties };
   }),
+
+  // SHOW SPECIFIC PROPERTY DETAILS TO THE OWNER
+  showPropertyDetails: ownerPrivateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { owner } = ctx;
+      const propertyDetails = await db.property.findUnique({
+        where: {
+          id: input.id,
+        },
+        include: {
+          owner: true,
+        },
+      });
+      return { success: true, propertyDetails, owner };
+    }),
 
   // TENANT API FUNCTIONS -------------------------------------------------
   getTenant: tenantprivateProcedure.query(async ({ ctx }) => {
