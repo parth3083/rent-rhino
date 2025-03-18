@@ -341,6 +341,32 @@ export const appRouter = router({
       });
       return { success: true };
     }),
+  // SHOW SPECIFIC PROPERTY DETAILS TO THE TENANT
+  showPropertyDetailsTenant: tenantprivateProcedure
+  .input(z.object({ id: z.string() }))
+  .query(async ({ input }) => {
+    try {
+      
+      const property = await db.property.findUnique({
+        where: { id: input.id },
+        include: { owner: true },
+      });
+      if (!property) throw new TRPCError({ code: 'NOT_FOUND' });
+      
+      return {
+        ...property,
+        owner: {
+          ...property.owner,
+          contactNumber: property.owner?.contactNumber?.toString() || '',
+          adharNumber: property.owner?.adharNumber?.toString() || '',
+        },
+      };
+    } catch (error) {
+      console.error('Error fetching property details:', error);
+      throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
+    }
+  }),
+  
 });
 
 // export type definition of API

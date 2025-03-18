@@ -56,6 +56,7 @@ function AllPropertiesPageContent() {
               <div className="w-full flex flex-col gap-3">
                 {data?.properties.map((items, index) => (
                   <PropertyCard
+                    id={items.id}
                     key={index}
                     name={items.name}
                     address={items.address}
