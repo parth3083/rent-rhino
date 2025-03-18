@@ -6,6 +6,7 @@ import {
 } from "./trpc";
 import { db } from "@/db";
 import { currentUser } from "@clerk/nextjs/server";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 enum PROPERTY_STATUS {
@@ -270,23 +271,29 @@ export const appRouter = router({
 
   // SHOW SPECIFIC PROPERTY DETAILS TO THE OWNER
   showPropertyDetails: ownerPrivateProcedure
-    .input(
-      z.object({
-        id: z.string(),
-      })
-    )
-    .query(async ({ input, ctx }) => {
+  .input(z.object({ id: z.string() }))
+  .query(async ({ input, ctx }) => {
+    try {
       const { owner } = ctx;
-      const propertyDetails = await db.property.findUnique({
-        where: {
-          id: input.id,
-        },
-        include: {
-          owner: true,
-        },
+      const property = await db.property.findUnique({
+        where: { id: input.id },
+        include: { owner: true },
       });
-      return { success: true, propertyDetails, owner };
-    }),
+      if (!property) throw new TRPCError({ code: 'NOT_FOUND' });
+      
+      return {
+        ...property,
+        owner: {
+          ...property.owner,
+          contactNumber: owner.contactNumber.toString(),
+          adharNumber: owner.adharNumber.toString(),
+        },
+      };
+    } catch (error) {
+      console.error('Error fetching property details:', error);
+      throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
+    }
+  }),
 
   // TENANT API FUNCTIONS -------------------------------------------------
   getTenant: tenantprivateProcedure.query(async ({ ctx }) => {
