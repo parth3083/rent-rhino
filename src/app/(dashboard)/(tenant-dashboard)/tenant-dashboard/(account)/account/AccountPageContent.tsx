@@ -71,7 +71,7 @@ function AccountPageContent() {
       onSuccess: () => {
         toast("Updated successfully ✅", {
           description: "Owner details have been updated.",
-        });
+        }); 
         utils.getTenant.invalidate();
       },
     });
@@ -187,66 +187,66 @@ function AccountPageContent() {
             </div>
           </div>
         )}
-        <div className="w-full items-center gap-8 lg:gap-36   flex ">
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="working">Working Area</Label>
-            <Input
-              defaultValue={data?.tenant.workingArea ?? ""}
-              {...register("workingArea")}
-              type="text"
-              id="working"
-              placeholder="enter state name"
-            />
-            {errors.workingArea ? (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.workingArea.message}
-              </p>
-            ) : null}
+          <div className="w-full items-center gap-8 lg:gap-36   flex ">
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="working">Working Area</Label>
+              <Input
+                defaultValue={data?.tenant.workingArea ?? ""}
+                {...register("workingArea")}
+                type="text"
+                id="working"
+                placeholder="enter state name"
+              />
+              {errors.workingArea ? (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.workingArea.message}
+                </p>
+              ) : null}
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="working">Tenant Status</Label>
+              {data?.tenant.tenantStatus ? (
+                <>
+                  <Input
+                    defaultValue={data?.tenant.tenantStatus ?? ""}
+                    type="text"
+                    readOnly
+                    id="tenantStatus"
+                    placeholder="enter state name"
+                  />
+                </>
+              ) : (
+                <Select
+                  onValueChange={(value: TENANT_STATUS) =>
+                    setValue("tenantStatus", value)
+                  }
+                >
+                  <SelectTrigger className="w-full max-w-sm">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value={TENANT_STATUS.STUDENT}>
+                        Student
+                      </SelectItem>
+                      <SelectItem value={TENANT_STATUS.WORKING_PROFESSIONAL}>
+                        Working Professional
+                      </SelectItem>
+                      <SelectItem value={TENANT_STATUS.FAMILY}>Family</SelectItem>
+                      <SelectItem value={TENANT_STATUS.SELF_EMPLOYED}>
+                        Self Employeed
+                      </SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              )}
+              {errors.tenantStatus ? (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.tenantStatus.message}
+                </p>
+              ) : null}
+            </div>
           </div>
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="working">Tenant Status</Label>
-            {data?.tenant.tenantStatus ? (
-              <>
-                <Input
-                  defaultValue={data?.tenant.tenantStatus ?? ""}
-                  type="text"
-                  readOnly
-                  id="tenantStatus"
-                  placeholder="enter state name"
-                />
-              </>
-            ) : (
-              <Select
-                onValueChange={(value: TENANT_STATUS) =>
-                  setValue("tenantStatus", value)
-                }
-              >
-                <SelectTrigger className="w-full max-w-sm">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value={TENANT_STATUS.STUDENT}>
-                      Student
-                    </SelectItem>
-                    <SelectItem value={TENANT_STATUS.WORKING_PROFESSIONAL}>
-                      Working Professional
-                    </SelectItem>
-                    <SelectItem value={TENANT_STATUS.FAMILY}>Family</SelectItem>
-                    <SelectItem value={TENANT_STATUS.SELF_EMPLOYED}>
-                      Self Employeed
-                    </SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            )}
-            {errors.tenantStatus ? (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.tenantStatus.message}
-              </p>
-            ) : null}
-          </div>
-        </div>
         <div className="w-full items-center justify-start mt-5  gap-8 lg:gap-36   flex ">
           <Button
             type="button"
