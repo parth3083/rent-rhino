@@ -44,16 +44,16 @@ export const appRouter = router({
 
     if (owner) {
       return { isSynced: true, role: "OWNER" };
-    }
+    } else {
+      const tenant = await db.tenant.findFirst({
+        where: {
+          externalId: auth.id,
+        },
+      });
 
-    const tenant = await db.tenant.findFirst({
-      where: {
-        externalId: auth.id,
-      },
-    });
-
-    if (tenant) {
-      return { isSynced: true, role: "TENANT" };
+      if (tenant) {
+        return { isSynced: true, role: "TENANT" };
+      }
     }
 
     return { isSynced: false };
@@ -89,7 +89,7 @@ export const appRouter = router({
           return { isSynced: true };
         }
         return { isSynced: true };
-      } else if (input.passedValue === "TENANT") {
+      } else {
         const tenant = await db.tenant.findFirst({
           where: {
             externalId: auth.id,
@@ -106,8 +106,6 @@ export const appRouter = router({
           return { isSynced: true };
         }
         return { isSynced: true };
-      } else {
-        return { isSynced: false };
       }
     }),
 
@@ -271,29 +269,29 @@ export const appRouter = router({
 
   // SHOW SPECIFIC PROPERTY DETAILS TO THE OWNER
   showPropertyDetails: ownerPrivateProcedure
-  .input(z.object({ id: z.string() }))
-  .query(async ({ input, ctx }) => {
-    try {
-      const { owner } = ctx;
-      const property = await db.property.findUnique({
-        where: { id: input.id },
-        include: { owner: true },
-      });
-      if (!property) throw new TRPCError({ code: 'NOT_FOUND' });
-      
-      return {
-        ...property,
-        owner: {
-          ...property.owner,
-          contactNumber: owner.contactNumber.toString(),
-          adharNumber: owner.adharNumber.toString(),
-        },
-      };
-    } catch (error) {
-      console.error('Error fetching property details:', error);
-      throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
-    }
-  }),
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input, ctx }) => {
+      try {
+        const { owner } = ctx;
+        const property = await db.property.findUnique({
+          where: { id: input.id },
+          include: { owner: true },
+        });
+        if (!property) throw new TRPCError({ code: "NOT_FOUND" });
+
+        return {
+          ...property,
+          owner: {
+            ...property.owner,
+            contactNumber: owner.contactNumber.toString(),
+            adharNumber: owner.adharNumber.toString(),
+          },
+        };
+      } catch (error) {
+        console.error("Error fetching property details:", error);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
+    }),
 
   // TENANT API FUNCTIONS -------------------------------------------------
   getTenant: tenantprivateProcedure.query(async ({ ctx }) => {
@@ -343,30 +341,73 @@ export const appRouter = router({
     }),
   // SHOW SPECIFIC PROPERTY DETAILS TO THE TENANT
   showPropertyDetailsTenant: tenantprivateProcedure
-  .input(z.object({ id: z.string() }))
-  .query(async ({ input }) => {
-    try {
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input,ctx }) => {
+      try {
+        const { tenantId } = ctx;
+
+        const [property,propertyRequest] = await Promise.all([
+           await db.property.findUnique({
+            where: { id: input.id },
+            include: { owner: true },
+           }),
+          await db.propertyRequest.findUnique({
+            where: {
+              tenantId_propertyId: {
+                tenantId,
+                propertyId:input.id
+              }
+            }
+          })
+        ])
+        
       
-      const property = await db.property.findUnique({
-        where: { id: input.id },
-        include: { owner: true },
-      });
-      if (!property) throw new TRPCError({ code: 'NOT_FOUND' });
-      
-      return {
-        ...property,
-        owner: {
-          ...property.owner,
-          contactNumber: property.owner?.contactNumber?.toString() || '',
-          adharNumber: property.owner?.adharNumber?.toString() || '',
-        },
-      };
-    } catch (error) {
-      console.error('Error fetching property details:', error);
-      throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
-    }
-  }),
-  
+
+        return {
+          ...property,
+          owner: {
+            ...property?.owner,
+            contactNumber: property?.owner?.contactNumber?.toString() || "",
+            adharNumber: property?.owner?.adharNumber?.toString() || "",
+          },
+          propertyRequest
+        };
+      } catch (error) {
+        console.error("Error fetching property details:", error);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
+    }),
+
+  // REQUEST FOR THE PROPERTY
+  registerPropertyRequest: tenantprivateProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      try {
+        const { tenantId } = ctx;
+        const existingRequest = await db.propertyRequest.findUnique({
+          where: {
+            tenantId_propertyId: {
+              tenantId,
+              propertyId: input.id,
+            },
+          },
+        });
+        if (existingRequest) {
+          throw new TRPCError({ code: "CONFLICT" });
+        }
+        await db.propertyRequest.create({
+          data: {
+            tenantId,
+            propertyId: input.id,
+            status: "PENDING",
+          },
+        });
+        return { success: true };
+      } catch (error) {
+        console.log("Error registering property request:", error);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
+    }),
 });
 
 // export type definition of API

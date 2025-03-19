@@ -89,6 +89,7 @@ model Tenant {
   rents               Rent[]
   createdAt           DateTime               @default(now())
   updatedAt           DateTime               @updatedAt
+  PropertyRequest     PropertyRequest[]
 }
 
 model Property {
@@ -115,6 +116,7 @@ model Property {
   maintenanceRequests Maintainence_Support[]
   Support_Tickets     Support_Tickets[]
   Tenant              Tenant?                @relation(fields: [tenantId], references: [id])
+  PropertyRequest     PropertyRequest[]
 
   @@index([ownerId])
   @@index([tenantId])
@@ -174,6 +176,25 @@ model Support_Tickets {
   description String
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+
+  @@unique([tenantId, propertyId])
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model PropertyRequest {
+  id         String        @id @default(cuid())
+  tenant     Tenant        @relation(fields: [tenantId], references: [id])
+  tenantId   String
+  property   Property      @relation(fields: [propertyId], references: [id])
+  propertyId String
+  status     RequestStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 
   @@unique([tenantId, propertyId])
 }

@@ -1,5 +1,6 @@
 "use client";
 import { trpc } from "@/app/_trpc/client";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
@@ -10,10 +11,19 @@ import {
 } from "@/components/ui/carousel";
 import Image from "next/image";
 import React from "react";
+import { toast } from "sonner";
 
 function PropertyDetailsContent({ id }: { id: string }) {
-  console.log(id);
+  const utils = trpc.useContext();
   const { data, isLoading } = trpc.showPropertyDetailsTenant.useQuery({ id });
+
+  const { mutate: registerPropertyRequest, isPending } =
+    trpc.registerPropertyRequest.useMutation({
+      onSuccess: () => {
+        toast.success("Property Requested successfully");
+        utils.showPropertyDetailsTenant.invalidate();
+      },
+    });
 
   return (
     <div className="w-full flex flex-col gap-5 lg:gap-2  ">
@@ -81,7 +91,7 @@ function PropertyDetailsContent({ id }: { id: string }) {
           <div className="w-full px-5">
             <Carousel className="w-full ">
               <CarouselContent className="-ml-1">
-                {data?.images.map((items, index) => (
+                {data?.images?.map((items, index) => (
                   <CarouselItem
                     key={index}
                     className="pl-1 md:basis-1/2 lg:basis-1/3"
@@ -168,6 +178,33 @@ function PropertyDetailsContent({ id }: { id: string }) {
                 {data?.owner?.contactNumber}
               </span>
             </h2>
+          </div>
+          {/* REQUEST OPTIONS  */}
+          <div className="w-full flex items-center mb-3 mt-3 gap-2">
+            <h1 className="text-xl font-medium">Request Options</h1>
+            <div className="h-px flex-1 bg-gray-300" />
+          </div>
+          <div className="flex items-center gap-10">
+            {data?.propertyRequest?.status === "PENDING" ? (
+              <Button
+                disabled={true}
+                className="hover:bg-white pointer-events-none hover:-translate-y-0.5 cursor-pointer hover:text-deepBlue-500 hover:shadow hover:border-deepBlue-500 hover:border transition-colors"
+              >
+                Requested
+              </Button>
+            ) : (
+                  <>
+                   <Button
+                onClick={() => registerPropertyRequest({ id })}
+                disabled={isPending}
+                className="hover:bg-white hover:-translate-y-0.5 cursor-pointer hover:text-deepBlue-500 hover:shadow hover:border-deepBlue-500 hover:border transition-colors"
+              >
+                {isPending ? " Requesting..." : "Request"}
+                  </Button>
+                  <Button variant="outline">Cancel</Button>
+                  </>
+            )}
+            
           </div>
         </>
       )}
