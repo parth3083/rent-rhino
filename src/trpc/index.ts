@@ -112,6 +112,9 @@ export const appRouter = router({
   // SHOW ALL THE PROPERTIES
   getAllProperties: tenantprivateProcedure.query(async () => {
     const properties = await db.property.findMany({
+      where: {
+        propertyStatus: PROPERTY_STATUS.EMPTY,
+      },
       select: {
         id: true,
         name: true,
@@ -123,6 +126,7 @@ export const appRouter = router({
         zipCode: true,
         propertyStatus: true,
       },
+
       orderBy: {
         createdAt: "desc",
       },
@@ -342,26 +346,24 @@ export const appRouter = router({
   // SHOW SPECIFIC PROPERTY DETAILS TO THE TENANT
   showPropertyDetailsTenant: tenantprivateProcedure
     .input(z.object({ id: z.string() }))
-    .query(async ({ input,ctx }) => {
+    .query(async ({ input, ctx }) => {
       try {
         const { tenantId } = ctx;
 
-        const [property,propertyRequest] = await Promise.all([
-           await db.property.findUnique({
+        const [property, propertyRequest] = await Promise.all([
+          await db.property.findUnique({
             where: { id: input.id },
             include: { owner: true },
-           }),
+          }),
           await db.propertyRequest.findUnique({
             where: {
               tenantId_propertyId: {
                 tenantId,
-                propertyId:input.id
-              }
-            }
-          })
-        ])
-        
-      
+                propertyId: input.id,
+              },
+            },
+          }),
+        ]);
 
         return {
           ...property,
@@ -370,7 +372,7 @@ export const appRouter = router({
             contactNumber: property?.owner?.contactNumber?.toString() || "",
             adharNumber: property?.owner?.adharNumber?.toString() || "",
           },
-          propertyRequest
+          propertyRequest,
         };
       } catch (error) {
         console.error("Error fetching property details:", error);
@@ -384,6 +386,10 @@ export const appRouter = router({
     .mutation(async ({ input, ctx }) => {
       try {
         const { tenantId } = ctx;
+        const property = await db.property.findUnique({
+          where: { id: input.id },
+          select: { ownerId: true },
+        });
         const existingRequest = await db.propertyRequest.findUnique({
           where: {
             tenantId_propertyId: {
@@ -399,6 +405,7 @@ export const appRouter = router({
           data: {
             tenantId,
             propertyId: input.id,
+            ownerId: property!.ownerId!,
             status: "PENDING",
           },
         });
