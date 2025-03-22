@@ -465,6 +465,45 @@ export const appRouter = router({
       return { success: true };
     }),
 
+  //FETCH ACTIVE TENANTS
+  getActiveTenants: ownerPrivateProcedure.query(async ({ ctx }) => {
+    try {
+      const { ownerId } = ctx;
+  
+      // Ensure ownerId exists
+      if (!ownerId) throw new Error("Owner ID is required.");
+  
+      const properties = await db.property.findMany({
+        where: {
+          ownerId,
+          PropertyRequest: {
+            some: { status: "ACCEPTED" },
+          },
+        },
+        include: {
+          PropertyRequest: true,
+          Tenant: true,
+        },
+      });
+  
+      const sanitizedProperties = properties.map((property) => ({
+        ...property,
+        Tenant: property.Tenant
+          ? {
+              ...property.Tenant,
+              contactNumber: property.Tenant.contactNumber?.toString() || "",
+              aadharNumber: property.Tenant.adharNumber?.toString() || "",
+            }
+          : null,
+      }));
+  
+      return { sanitizedProperties };
+    } catch (error) {
+      console.log("Error in getActiveTenants:", error);
+      throw new Error("Internal Server Error");
+    }
+  }),
+  
   // TENANT API FUNCTIONS -------------------------------------------------
   getTenant: tenantprivateProcedure.query(async ({ ctx }) => {
     const { tenant } = ctx;
