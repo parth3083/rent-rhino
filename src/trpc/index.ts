@@ -412,6 +412,57 @@ export const appRouter = router({
     }),
 
   // SET THE PROPERTY REQUEST STATUS
+  updateThePropertyRequestStatus: ownerPrivateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const propertyRequestDetails = await db.propertyRequest.findUnique({
+        where: {
+          id: input.id,
+        },
+      });
+      await Promise.all([
+        await db.propertyRequest.update({
+          where: {
+            id: input.id,
+          },
+          data: {
+            status: "ACCEPTED",
+          },
+        }),
+        await db.property.update({
+          where: {
+            id: propertyRequestDetails?.propertyId,
+          },
+          data: {
+            tenantId: propertyRequestDetails?.tenantId,
+          },
+        }),
+      ]);
+      return { success: true };
+    }),
+
+  //REJECT THE PROPERTY REQUEST
+  rejectPropertyRequest: ownerPrivateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await db.propertyRequest.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          status: "REJECTED",
+        },
+      });
+      return { success: true };
+    }),
 
   // TENANT API FUNCTIONS -------------------------------------------------
   getTenant: tenantprivateProcedure.query(async ({ ctx }) => {
@@ -459,34 +510,49 @@ export const appRouter = router({
       });
       return { success: true };
     }),
+
   // SHOW SPECIFIC PROPERTY DETAILS TO THE TENANT
   showPropertyDetailsTenant: tenantprivateProcedure
-    .input(z.object({ id: z.string() }))
+    .input(
+      z.object({
+        id: z.string(),
+        propertyRequestId: z.string().optional(),
+      })
+    )
     .query(async ({ input, ctx }) => {
       try {
         const { tenantId } = ctx;
 
         const [property, propertyRequest] = await Promise.all([
-          await db.property.findUnique({
+          // Fetch the property with the owner information
+          db.property.findUnique({
             where: { id: input.id },
             include: { owner: true },
           }),
-          await db.propertyRequest.findUnique({
-            where: {
-              tenantId_propertyId: {
-                tenantId,
-                propertyId: input.id,
-              },
-            },
-          }),
+
+          // Fetch property request only if propertyRequestId is provided
+          input.propertyRequestId
+            ? db.propertyRequest.findUnique({
+                where: {
+                  id: input.propertyRequestId,
+                },
+              })
+            : Promise.resolve(null),
         ]);
+
+        if (!property) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Property not found",
+          });
+        }
 
         return {
           ...property,
           owner: {
-            ...property?.owner,
-            contactNumber: property?.owner?.contactNumber?.toString() || "",
-            adharNumber: property?.owner?.adharNumber?.toString() || "",
+            ...property.owner,
+            contactNumber: property.owner?.contactNumber?.toString() || "",
+            adharNumber: property.owner?.adharNumber?.toString() || "",
           },
           propertyRequest,
         };
@@ -506,18 +572,7 @@ export const appRouter = router({
           where: { id: input.id },
           select: { ownerId: true },
         });
-        const existingRequest = await db.propertyRequest.findUnique({
-          where: {
-            tenantId_propertyId: {
-              tenantId,
-              propertyId: input.id,
-            },
-          },
-        });
-        if (existingRequest) {
-          throw new TRPCError({ code: "CONFLICT" });
-        }
-        await db.propertyRequest.create({
+        const updatedPropertyRequest = await db.propertyRequest.create({
           data: {
             tenantId,
             propertyId: input.id,
@@ -525,7 +580,7 @@ export const appRouter = router({
             status: "PENDING",
           },
         });
-        return { success: true };
+        return { success: true, updatedPropertyRequest };
       } catch (error) {
         console.log("Error registering property request:", error);
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });

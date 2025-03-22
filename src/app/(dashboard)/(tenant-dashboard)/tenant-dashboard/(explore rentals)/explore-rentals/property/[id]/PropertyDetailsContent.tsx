@@ -15,16 +15,21 @@ import { toast } from "sonner";
 
 function PropertyDetailsContent({ id }: { id: string }) {
   const utils = trpc.useContext();
-  const { data, isLoading } = trpc.showPropertyDetailsTenant.useQuery({ id });
 
-  const { mutate: registerPropertyRequest, isPending } =
-    trpc.registerPropertyRequest.useMutation({
-      onSuccess: () => {
-        toast.success("Property Requested successfully");
-        utils.showPropertyDetailsTenant.invalidate();
-      },
-    });
-
+  const {
+    mutate: registerPropertyRequest,
+    isPending,
+    data: propertyRequestData,
+  } = trpc.registerPropertyRequest.useMutation({
+    onSuccess: () => {
+      toast.success("Property Requested successfully");
+      utils.showPropertyDetailsTenant.invalidate();
+    },
+  });
+  const { data, isLoading } = trpc.showPropertyDetailsTenant.useQuery({
+    id,
+    propertyRequestId: propertyRequestData?.updatedPropertyRequest.id,
+  });
   return (
     <div className="w-full flex flex-col gap-5 lg:gap-2  ">
       {isLoading ? (
@@ -193,18 +198,17 @@ function PropertyDetailsContent({ id }: { id: string }) {
                 Requested
               </Button>
             ) : (
-                  <>
-                   <Button
-                onClick={() => registerPropertyRequest({ id })}
-                disabled={isPending}
-                className="hover:bg-white hover:-translate-y-0.5 cursor-pointer hover:text-deepBlue-500 hover:shadow hover:border-deepBlue-500 hover:border transition-colors"
-              >
-                {isPending ? " Requesting..." : "Request"}
-                  </Button>
-                  <Button variant="outline">Cancel</Button>
-                  </>
+              <>
+                <Button
+                  onClick={() => registerPropertyRequest({ id })}
+                  disabled={isPending}
+                  className="hover:bg-white hover:-translate-y-0.5 cursor-pointer hover:text-deepBlue-500 hover:shadow hover:border-deepBlue-500 hover:border transition-colors"
+                >
+                  {isPending ? " Requesting..." : "Request"}
+                </Button>
+                <Button variant="outline">Cancel</Button>
+              </>
             )}
-            
           </div>
         </>
       )}
