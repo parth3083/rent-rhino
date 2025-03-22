@@ -8,6 +8,8 @@ import { db } from "@/db";
 import { currentUser } from "@clerk/nextjs/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { startOfDay, startOfMonth, startOfWeek } from "date-fns";
+import { PropertyStatus } from "@prisma/client";
 
 enum PROPERTY_STATUS {
   EMPTY = "EMPTY",
@@ -296,6 +298,120 @@ export const appRouter = router({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),
+
+  //SHOW ALL THE PROPERTY REQUESTS BY THE USER
+  getAllPropertyRequests: ownerPrivateProcedure.query(async ({ ctx }) => {
+    const { ownerId } = ctx;
+    const now = new Date();
+    const startOfTheMonth = startOfMonth(now);
+    const startOfTheWeek = startOfWeek(now);
+    const startOfTheDay = startOfDay(now);
+    const [monthlyRequests, weeklyRequest, todaysRequest] = await Promise.all([
+      await db.propertyRequest.findMany({
+        where: {
+          ownerId,
+          status: "PENDING",
+          createdAt: {
+            gte: startOfTheMonth,
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          property: {
+            select: {
+              name: true,
+              propertyStatus: true,
+            },
+          },
+          tenant: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      }),
+      await db.propertyRequest.findMany({
+        where: {
+          ownerId,
+          status: "PENDING",
+          createdAt: {
+            gte: startOfTheWeek,
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          property: {
+            select: {
+              name: true,
+              propertyStatus: true,
+            },
+          },
+          tenant: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      }),
+      await db.propertyRequest.findMany({
+        where: {
+          ownerId,
+          status: "PENDING",
+          createdAt: {
+            gte: startOfTheDay,
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          property: {
+            select: {
+              name: true,
+              propertyStatus: true,
+            },
+          },
+          tenant: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    return { monthlyRequests, weeklyRequest, todaysRequest };
+  }),
+
+  //GET TENANT DETAILS
+  getTenantDetailsForOwner: ownerPrivateProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const allDetails = await db.propertyRequest.findUnique({
+        where: {
+          id: input.id,
+        },
+        include: {
+          tenant: true,
+          property: true,
+        },
+      });
+
+      return {
+        ...allDetails,
+        tenant: {
+          ...allDetails?.tenant,
+          contactNumber: allDetails?.tenant?.contactNumber?.toString() || "",
+          adharNumber: allDetails?.tenant?.adharNumber?.toString() || "",
+        },
+      };
+    }),
+
+  // SET THE PROPERTY REQUEST STATUS
 
   // TENANT API FUNCTIONS -------------------------------------------------
   getTenant: tenantprivateProcedure.query(async ({ ctx }) => {
