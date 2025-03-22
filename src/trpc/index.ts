@@ -439,6 +439,7 @@ export const appRouter = router({
           },
           data: {
             tenantId: propertyRequestDetails?.tenantId,
+            propertyStatus: "RENTED",
           },
         }),
       ]);
