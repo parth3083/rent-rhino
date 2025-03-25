@@ -42,7 +42,7 @@ const SIDEBAR_ITEMS: SidebarCategory[] = [
       {
         href: "/owner-dashboard/maintainence-requests",
         icon: Ticket,
-        text: "Support Ticket",
+        text: "Maintainence Requests",
       },
     ],
   },
