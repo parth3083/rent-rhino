@@ -15,7 +15,7 @@ enum PROPERTY_STATUS {
 
 function ActiveTenantPageContent() {
   const { data, isLoading } = trpc.getActiveTenants.useQuery();
-
+ 
 
   return (
     <div className="w-full flex flex-col gap-3">
