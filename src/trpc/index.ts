@@ -632,6 +632,64 @@ export const appRouter = router({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),
+
+  // MAINTAINENECE REQUEST FOR THE TENANTS
+  registerMaintainenceRequest: tenantprivateProcedure
+    .input(
+      z.object({
+        title: z.string().min(3, "Title must be 1 character long"),
+        description: z.string(),
+        image: z.array(z.string()).optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { tenantId } = ctx;
+      if (!tenantId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Tenant ID is missing",
+        });
+      }
+      const property = await db.property.findFirst({
+        where: {
+          tenantId,
+          propertyStatus: "RENTED",
+        },
+        include: {
+          owner: true,
+        },
+      });
+  
+      if (!property) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Property not found",
+        });
+      }
+
+      try {
+        await db.maintainence_Support.create({
+          data: {
+            title: input.title,
+            description: input.description,
+            image: input.image ?? [],
+            propertyId: property.id,
+            tenantId: tenantId,
+            ownerId: property.ownerId,
+            status:"IN_PROGRESS"
+          },
+        });
+  
+        return { success: true };
+      } catch (error) {
+        console.error("Error creating maintenance request:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create maintenance request",
+        });
+      }
+      return { success: true };
+    }),
 });
 
 // export type definition of API

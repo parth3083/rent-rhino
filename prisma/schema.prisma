@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,6 +5,150 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Owner {
+  id                   String                 @id @default(cuid())
+  name                 String?
+  email                String                 @unique
+  externalId           String                 @unique
+  contactNumber        BigInt?
+  adharNumber          BigInt?
+  adharImage           String?
+  numberOfProperties   Int?                   @default(0)
+  totalRevenue         Float?                 @default(0)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  Maintainence_Support Maintainence_Support[]
+  payments             Payments[]
+  properties           Property[]             @relation("OwnerProperties")
+  PropertyRequest      PropertyRequest[]
+}
+
+model Tenant {
+  id                  String                 @id @default(cuid())
+  name                String?
+  email               String                 @unique
+  externalId          String                 @unique
+  contactNumber       BigInt?
+  adharNumber         BigInt?
+  adharImage          String?
+  workingArea         String?
+  tenantStatus        TenantStatus?
+  rentPaymentType     RentPayment            @default(MONTHLY)
+  leaseStart          DateTime?
+  leaseEnd            DateTime?
+  rentAmount          Float?
+  leaseExtension      LeaseExtension         @default(INCREASE)
+  leaseContract       String?
+  rentedPropertyId    String?
+  propertyId          String?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  maintenanceRequests Maintainence_Support[]
+  payments            Payments[]
+  rentedProperty      Property[]
+  PropertyRequest     PropertyRequest[]
+  rents               Rent[]
+  supportTickets      Support_Tickets[]
+}
+
+model Property {
+  id                  String                 @id @default(cuid())
+  name                String
+  address             String
+  area                String
+  state               String
+  zipCode             Int
+  images              String[]
+  personLimit         Int
+  propertyStatus      PropertyStatus         @default(EMPTY)
+  rentAmount          Int
+  depositAmount       Int
+  leaseDocuments      String?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  ownerId             String
+  tenantId            String?
+  city                String
+  maintenanceRequests Maintainence_Support[]
+  owner               Owner                  @relation("OwnerProperties", fields: [ownerId], references: [id], onDelete: Cascade)
+  Tenant              Tenant?                @relation(fields: [tenantId], references: [id])
+  PropertyRequest     PropertyRequest[]
+  rents               Rent[]
+  Support_Tickets     Support_Tickets[]
+
+  @@index([ownerId])
+  @@index([tenantId])
+}
+
+model Payments {
+  id            String        @id @default(cuid())
+  ownerId       String?
+  tenantId      String?
+  amount        Float
+  date          DateTime      @default(now())
+  paymentStatus PaymentStatus @default(UNPAID)
+  createdAt     DateTime      @default(now())
+  owner         Owner?        @relation(fields: [ownerId], references: [id])
+  tenant        Tenant?       @relation(fields: [tenantId], references: [id])
+}
+
+model Rent {
+  id         String     @id @default(cuid())
+  tenantId   String
+  amount     Float
+  date       DateTime   @default(now())
+  propertyId String?
+  rentStatus RentStatus @default(PENDING)
+  createdAt  DateTime   @default(now())
+  Property   Property?  @relation(fields: [propertyId], references: [id])
+  tenant     Tenant     @relation(fields: [tenantId], references: [id])
+}
+
+model Maintainence_Support {
+  id          String        @id @default(cuid())
+  propertyId  String
+  tenantId    String
+  title       String
+  image       String[]
+  description String
+  status      Ticket_Status @default(OPEN)
+  createdAt   DateTime      @default(now())
+  ownerId     String
+  owner       Owner         @relation(fields: [ownerId], references: [id])
+  property    Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tenant      Tenant        @relation(fields: [tenantId], references: [id])
+}
+
+model Support_Tickets {
+  id          String         @id @default(cuid())
+  tenantId    String?
+  propertyId  String?
+  status      Ticket_Status? @default(OPEN)
+  subject     String
+  description String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  property    Property?      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tenant      Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, propertyId])
+}
+
+model PropertyRequest {
+  id         String        @id @default(cuid())
+  tenantId   String
+  propertyId String
+  status     RequestStatus
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  ownerId    String
+  owner      Owner         @relation(fields: [ownerId], references: [id])
+  property   Property      @relation(fields: [propertyId], references: [id])
+  tenant     Tenant        @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, propertyId, id])
 }
 
 enum RentStatus {
@@ -48,156 +186,14 @@ enum Ticket_Status {
   RESOLVED
 }
 
-model Owner {
-  id                 String            @id @default(cuid())
-  name               String?
-  email              String            @unique
-  externalId         String            @unique
-  contactNumber      BigInt?
-  adharNumber        BigInt?
-  adharImage         String?
-  numberOfProperties Int?              @default(0)
-  totalRevenue       Float?            @default(0)
-  properties         Property[]        @relation("OwnerProperties")
-  payments           Payments[]
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
-  PropertyRequest    PropertyRequest[]
-}
-
-model Tenant {
-  id                  String                 @id @default(cuid())
-  name                String?
-  email               String                 @unique
-  externalId          String                 @unique
-  contactNumber       BigInt?
-  adharNumber         BigInt?
-  adharImage          String?
-  workingArea         String?
-  tenantStatus        TenantStatus?
-  rentPaymentType     RentPayment            @default(MONTHLY)
-  leaseStart          DateTime?
-  leaseEnd            DateTime?
-  rentAmount          Float?
-  leaseExtension      LeaseExtension         @default(INCREASE)
-  leaseContract       String?
-  rentedProperty      Property[]
-  rentedPropertyId    String?
-  propertyId          String?
-  payments            Payments[]
-  maintenanceRequests Maintainence_Support[]
-  supportTickets      Support_Tickets[]
-  rents               Rent[]
-  createdAt           DateTime               @default(now())
-  updatedAt           DateTime               @updatedAt
-  PropertyRequest     PropertyRequest[]
-}
-
-model Property {
-  id             String         @id @default(cuid())
-  name           String
-  address        String
-  area           String
-  state          String
-  city           String
-  zipCode        Int
-  images         String[]
-  personLimit    Int
-  propertyStatus PropertyStatus @default(EMPTY)
-  rentAmount     Int
-  depositAmount  Int
-  leaseDocuments String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  owner          Owner          @relation("OwnerProperties", fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId        String
-
-  tenantId            String?
-  rents               Rent[]
-  maintenanceRequests Maintainence_Support[]
-  Support_Tickets     Support_Tickets[]
-  Tenant              Tenant?                @relation(fields: [tenantId], references: [id])
-  PropertyRequest     PropertyRequest[]
-
-  @@index([ownerId])
-  @@index([tenantId])
-}
-
 enum PaymentStatus {
   PAID
   UNPAID
   OVERDUE
 }
 
-model Payments {
-  id            String        @id @default(cuid())
-  owner         Owner?        @relation(fields: [ownerId], references: [id])
-  ownerId       String?
-  tenant        Tenant?       @relation(fields: [tenantId], references: [id])
-  tenantId      String?
-  amount        Float
-  date          DateTime      @default(now())
-  paymentStatus PaymentStatus @default(UNPAID)
-  createdAt     DateTime      @default(now())
-}
-
-model Rent {
-  id         String     @id @default(cuid())
-  tenant     Tenant     @relation(fields: [tenantId], references: [id])
-  tenantId   String
-  amount     Float
-  date       DateTime   @default(now())
-  Property   Property?  @relation(fields: [propertyId], references: [id])
-  propertyId String?
-  rentStatus RentStatus @default(PENDING)
-  createdAt  DateTime   @default(now())
-}
-
-model Maintainence_Support {
-  id          String        @id @default(cuid())
-  property    Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  propertyId  String
-  tenant      Tenant        @relation(fields: [tenantId], references: [id])
-  tenantId    String
-  title       String
-  image       String[]
-  description String
-  status      Ticket_Status @default(OPEN)
-  createdAt   DateTime      @default(now())
-}
-
-model Support_Tickets {
-  id          String         @id @default(cuid())
-  tenant      Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId    String?
-  property    Property?      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  propertyId  String?
-  status      Ticket_Status? @default(OPEN)
-  subject     String
-  description String
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-
-  @@unique([tenantId, propertyId])
-}
-
 enum RequestStatus {
   PENDING
   ACCEPTED
   REJECTED
-}
-
-model PropertyRequest {
-  id         String        @id @default(cuid())
-  tenant     Tenant        @relation(fields: [tenantId], references: [id])
-  tenantId   String
-  property   Property      @relation(fields: [propertyId], references: [id])
-  propertyId String
-  status     RequestStatus
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  owner      Owner         @relation(fields: [ownerId], references: [id])
-  ownerId    String
-
-  @@unique([tenantId, propertyId, id])
 }
